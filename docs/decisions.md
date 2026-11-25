@@ -1,7 +1,7 @@
 # base-app: decisions and file tree
 
 Where the base-app platform and the team repo stand as of 2026-11-25 (branch `phase-2`,
-commit `7ff3fc4`). The design paper is `base-app-paper.md`; where this file and the paper differ,
+commit `477b3fd`). The design paper is `base-app-paper.md`; where this file and the paper differ,
 this file describes what is built.
 
 ## Decisions
