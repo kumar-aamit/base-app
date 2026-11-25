@@ -1,0 +1,211 @@
+# base-app: decisions and file tree
+
+Where the base-app platform and the team repo stand as of 2026-11-25 (branch `phase-2`,
+commit `7ff3fc4`). The design paper is `base-app-paper.md`; where this file and the paper differ,
+this file describes what is built.
+
+## Decisions
+
+### Lab shape
+
+| Decision | Detail |
+|---|---|
+| One platform, one folder per team | Every team repo is the platform plus one `app/` folder. OpenClaw edits only `app/`. |
+| Lead use case | Alert Triage (IT security), built in the Review layout in three prompts: Build, Ground it, Shape the answer. |
+| Team repo name | `team-<N>`, from the lab user number (`user7` → `team-7`), as `start-lab.sh` already derives it. |
+| Base image build | dCloud automation builds and deploys the base image at lab start. Teams never build it. |
+| Team image | The team's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and an `APP_COMMIT` build arg. |
+| Seeding | `scripts/build-team-repo.sh` writes `dist/team-repo/`; `start-lab.sh` commits it into each team repo through the Gitea Contents API (`TEAM_APP_DIR`). The `start-lab.sh` wiring is still to do. |
+
+### Repo layout
+
+| Decision | Detail |
+|---|---|
+| The repo root is laid out as a team repo | What you open is what a team gets, plus base-app tooling beside it. |
+| `platform/baseapp/` is the source | Not a generated copy. The package is `baseapp`, not `platform`, which would shadow the standard library. |
+| Seed by explicit list | `SEED` in `build-team-repo.sh`: AGENTS.md, Dockerfile, Makefile, team.env.example, .gitignore, .gitea, app, catalog, examples, skills, platform. |
+| Base-app only | Containerfile, .dockerignore, tests, scripts, docs, base-app-paper.md, pyproject.toml, requirements-test.txt. `tests/test_seed.py` fails if a new top-level path is in neither list. |
+| `platform/PIN` | A hash of `platform/baseapp`, written only into the seeded copy. `make check` in a team repo fails if `platform/` was edited; in this repo it skips the comparison. |
+| Working copy | `/Users/amitkumar/PycharmProjects/hackathon-v2`. The older copy under `Documents/demo-guide/base-app` is stale. No git remote yet. |
+
+### Stack and runtime
+
+| Decision | Detail |
+|---|---|
+| Stack | Python 3.12, FastAPI, Jinja2 templates, htmx. No frontend build. |
+| Dependencies | Seven pins: fastapi 0.165.0, uvicorn 0.54.0, jinja2 3.1.6, httpx 0.28.1, pyyaml 6.0.4, python-multipart 0.0.34, pypdf 7.1.1. Dev only: watchfiles 1.3.0, pytest 9.2.0. |
+| Nothing from the internet | htmx 2.0.11, Atkinson Hyperlegible Next and Mono 5.3.0 and lucide-static 1.79.0 icons are vendored. FastAPI's `/docs` and `/redoc` are off. `make check` rejects external URLs in `app/`. |
+| Port and health | Port 8742. `/health` and `/healthz` both answer `{"status": "ok"}`. `/api/version` reports the running commit for `make wait`. |
+| Base image | Two stages, ubi9 python-312 into python-312-minimal; runs as any UID in group 0 with a read-only root and `/tmp` as emptyDir. Measured: ready in 247 ms, idle at 35.4 MiB. |
+| Pod sizing (planned) | Requests 25m CPU / 64Mi, limits 500m / 256Mi, set in the Deployment template with Task 7. |
+| Stateless | No database. Knowledge is indexed in memory at startup. |
+
+### Models
+
+| Decision | Detail |
+|---|---|
+| Two tiers, both run | fast: Llama 3.1 8B. smart: `nvidia/nemotron-3.5-super`. Set with `LLM_FAST_URL`, `LLM_FAST_MODEL`, `LLM_SMART_URL`, `LLM_SMART_MODEL`, `LLM_API_KEY`. The fast URL is not supplied yet. |
+| Client | Plain httpx to the OpenAI-compatible `/chat/completions`; no SDK. Temperature 0.2, max 4096 tokens, 120 s timeout. |
+| Structured answers | Each screen's answer blocks become a JSON schema sent as `response_format`; the reply is checked against it. |
+| Reasoning switch | `reasoning: off` sends `chat_template_kwargs: {enable_thinking: false}`. |
+| Mock mode | `LLM_MOCK=1`: no model is called; each example's `mock:` answer is returned, or a placeholder built from the blocks. The placeholder page shows model checks as grey "skipped: mock mode", not green. |
+
+### What a team writes in app/
+
+| Decision | Detail |
+|---|---|
+| Fixed files | `app.yaml`; `screens/<name>.yaml` and `prompts/<name>.md` for every name in `screens:`. |
+| Optional | `knowledge/` (any folder a screen names), `data/` (convention; required only by `ctx.data` and `ctx.text`), `hooks.py`. |
+| app.yaml fields | `name` (1 to 40 characters), `mark` (one letter or a vendored icon), `brand` (hex, at least 4.5:1 against white), `site`, `screens`. |
+| Layouts | Only `review` in this platform version. `workspace` and `assistant` are rejected with a message saying so (phase 3). |
+| Inputs | text, textarea, select (a list or the first column of a CSV), number, toggle, file (.txt .log .csv .md .json .pdf become text, up to 2 MB). |
+| Answer blocks | text, score `{value 0-100, label}`, table (with `columns:`), checklist `{step, source}`. Charts, streaming and chat are phase 3. |
+| Examples | Each is a chip in the UI and a test in `make check`. Every screen needs at least one. |
+| Prompts | Jinja2 with undefined names as errors. They get every input, every hook value, `site` and `app_name`. |
+| Knowledge search | BM25 in pure Python. Markdown splits at headings, and each section is also found by its document's title. The 4 best passages are appended as `[n] file — heading`; checklist sources cite them. |
+| Hooks | `prepare(ctx)` returns a dict of new prompt values. Standard library only; `ctx.data()` and `ctx.text()` read only from `app/data/`. |
+| Error messages | Name the file, the field and the fix, so a model can act on them. |
+
+### Commands
+
+| Command | What it does |
+|---|---|
+| `make dev` | Runs the app on port 8742 with live reload of `app/`. |
+| `make check` | Under 5 s, no GPU: platform PIN; external URLs; stdlib-only hook imports; app.yaml and every screen; brand contrast; every screen renders; every example runs end to end against the mock and renders; mock citations exist. |
+| `make wait` | Waits until the team's Route serves the pushed commit. |
+| `make smoke` | Runs every example against the deployed app and real models and prints timings. |
+
+### Trust signals
+
+| Signal | Where |
+|---|---|
+| Air-gap capable badge | Header of every page. |
+| Privacy note | Under the inputs: "What you enter stays in {site}. It goes only to the {tier} model server on-site." |
+| Response route | Under every answer: device to app to model, with the browser-measured total and the model time; "Mock answer: no model was called" in mock mode. |
+| Footer | "Data stays in {site}", the platform version and the build commit. |
+
+## Open items
+
+- Wire `start-lab.sh` to seed `dist/team-repo/` (`TEAM_APP_DIR`), write each team's `team.env`, and pass `BASE_IMAGE` to the BuildConfig (phase 1 Task 7); then the on-cluster acceptance run (Task 8).
+- Create a git remote for this repo so the lab-start machine can fetch it.
+- Run the examples against the real models; every screenshot so far is mock mode.
+- Confine `knowledge:` to folders inside `app/`, like the other paths.
+- Add to the skill: quote YAML values that contain `, ? : #`.
+- Update the paper: the team repo has a `Dockerfile` (not `Containerfile`), and only the review layout exists yet.
+- Phase 3: workspace and assistant layouts, streaming, follow-up chat, charts, image input. Phase 4: the other 26 catalog briefs and OpenClaw provisioning.
+- A whole-branch code review has not been done.
+
+## File tree
+
+Tracked files on `phase-2`. Vendored assets, plans and screenshots are collapsed (`…`), and so are the
+gallery apps and walkthrough steps, which have the same shape as `examples/alert-triage/app/`.
+Paths marked **seeded** are what `build-team-repo.sh` copies into every team repo.
+
+```text
+hackathon-v2/
+├── .gitea/workflows/build-deploy-openshift.yml   seeded: build and deploy on push
+├── app/                                          seeded: THE team's app; starts as the placeholder
+│   └── app.yaml
+├── catalog/                                      seeded: briefs a first prompt can name
+│   └── it-alert-triage.md
+├── docs/                                         base-app only
+│   ├── decisions.md                              this file
+│   ├── gallery/                                  one app per industry, mock screenshots
+│   │   ├── alarm-flood/app/…
+│   │   ├── aml-narrator/app/…
+│   │   ├── clause-review/app/…
+│   │   ├── config-auditor/app/…
+│   │   ├── discharge/app/…
+│   │   ├── line-assist/app/…
+│   │   ├── records-release/app/…
+│   │   ├── shrink-analyst/app/…
+│   │   ├── *.png
+│   │   └── README.md
+│   ├── screenshots/…                             phase 1 placeholder screenshots
+│   ├── superpowers/…                             roadmap and phase plans
+│   └── walkthrough/alert-triage/                 app/ after each of the three prompts
+│       ├── step-1-build/app/…
+│       ├── step-2-ground/app/…
+│       ├── *.png
+│       ├── app-yaml.md
+│       └── README.md
+├── examples/                                     seeded: finished apps to copy patterns from
+│   └── alert-triage/app/                         = step 3 of the walkthrough
+│       ├── data/
+│       │   ├── assets.csv
+│       │   ├── vpn-lockout.log
+│       │   └── vpn-spray.log
+│       ├── knowledge/
+│       │   ├── malware-beacon.md
+│       │   ├── password-spray.md
+│       │   └── phishing.md
+│       ├── prompts/
+│       │   └── triage.md
+│       ├── screens/
+│       │   └── triage.yaml
+│       ├── app.yaml
+│       └── hooks.py
+├── platform/                                     seeded (+ PIN); read-only for teams
+│   ├── baseapp/                                  the platform source
+│   │   ├── static/
+│   │   │   ├── css/base.css
+│   │   │   ├── js/review.js
+│   │   │   └── vendor/…                          htmx, fonts, icons
+│   │   ├── templates/
+│   │   │   ├── layouts/review.html
+│   │   │   ├── partials/
+│   │   │   │   ├── answer.html
+│   │   │   │   ├── checks.html
+│   │   │   │   ├── input.html
+│   │   │   │   └── run_error.html
+│   │   │   ├── base.html
+│   │   │   └── placeholder.html
+│   │   ├── __init__.py
+│   │   ├── __main__.py                           python -m baseapp: uvicorn on APP_PORT
+│   │   ├── appspec.py                            app.yaml
+│   │   ├── blocks.py                             answer blocks: schema, placeholder, checks
+│   │   ├── check.py                              make check
+│   │   ├── config.py                             settings from the environment
+│   │   ├── files.py                              uploads to text
+│   │   ├── health.py                             model endpoint checks
+│   │   ├── hookrunner.py                         hooks.py and ctx
+│   │   ├── knowledge.py                          BM25 search
+│   │   ├── llm.py                                model client
+│   │   ├── main.py                               routes
+│   │   ├── pin.py                                platform/PIN hash
+│   │   ├── runner.py                             one run: inputs → hooks → search → prompt → model
+│   │   ├── screens.py                            screen files
+│   │   ├── smoke.py                              make smoke
+│   │   └── wait.py                               make wait
+│   ├── requirements-dev.txt
+│   └── requirements.txt
+├── scripts/                                      base-app only
+│   ├── build-team-repo.sh                        writes dist/team-repo/
+│   ├── vendor-assets.sh                          refreshes platform/baseapp/static/vendor/
+│   └── verify-image.sh                           OpenShift-style run: ready < 1 s, idle < 64 MiB
+├── skills/                                       seeded: the OpenClaw skill
+│   └── base-app/SKILL.md
+├── tests/                                        base-app only; 88 tests
+│   ├── test_appspec.py
+│   ├── test_check_smoke.py
+│   ├── test_config.py
+│   ├── test_health.py
+│   ├── test_knowledge_files_hooks.py
+│   ├── test_llm_runner.py
+│   ├── test_main.py
+│   ├── test_review_web.py
+│   ├── test_screens.py
+│   ├── test_seed.py
+│   ├── test_wait.py
+│   └── test_walkthrough.py
+├── .dockerignore                                 base-app only
+├── .gitignore                                    seeded
+├── AGENTS.md                                     seeded: the 9 rules OpenClaw follows
+├── base-app-paper.md                             base-app only: the design paper
+├── Containerfile                                 base-app only: the base image
+├── Dockerfile                                    seeded: the team image
+├── Makefile                                      seeded: dev, check, wait, smoke
+├── pyproject.toml                                base-app only: pytest settings
+├── requirements-test.txt                         base-app only
+└── team.env.example                              seeded
+```
