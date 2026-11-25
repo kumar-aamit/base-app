@@ -119,6 +119,8 @@ code { font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace; font-
 .check-icon { display: grid; place-items: center; }
 .check-ok .check-icon { color: var(--ok); }
 .check-fail .check-icon { color: var(--fail); }
+.check-skip .check-icon { color: var(--muted); }
+.check-skip .check-name { color: var(--muted); }
 .check-name { font-weight: 700; }
 .check-detail { color: var(--muted); overflow-wrap: anywhere; }
 .check-fail .check-detail { color: var(--fail); }

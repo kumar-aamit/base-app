@@ -44,8 +44,10 @@ def test_checks_json_and_fragment(tmp_path):
     rows = c.get("/api/checks").json()
     assert [r["name"] for r in rows] == ["App", "Fast model", "Smart model"]
     assert rows[0]["detail"] == "running abc1234"
+    assert rows[1]["ok"] is None and rows[1]["detail"] == "skipped: mock mode"
     frag = c.get("/api/checks", headers={"HX-Request": "true"}).text
-    assert "<html" not in frag and "mock mode" in frag
+    assert "<html" not in frag
+    assert frag.count("check-skip") == 2 and frag.count("check-ok") == 1
 
 
 def test_page_declares_inline_favicon(tmp_path):

@@ -10,7 +10,7 @@ from .config import ModelEndpoint, Settings
 @dataclass(frozen=True)
 class CheckResult:
     name: str
-    ok: bool
+    ok: bool | None  # None = skipped, not tested
     detail: str
     ms: int | None
 
@@ -46,7 +46,7 @@ async def check_model(
 
 async def run_checks(settings: Settings, client: httpx.AsyncClient) -> list[CheckResult]:
     if settings.mock:
-        return [CheckResult(n, True, "mock mode", None) for n in ("Fast model", "Smart model")]
+        return [CheckResult(n, None, "skipped: mock mode", None) for n in ("Fast model", "Smart model")]
     return list(await asyncio.gather(
         check_model("Fast model", settings.fast, settings.api_key, client),
         check_model("Smart model", settings.smart, settings.api_key, client),

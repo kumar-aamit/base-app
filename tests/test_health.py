@@ -64,4 +64,4 @@ def test_mock_mode_skips_requests():
             return await run_checks(s, c)
     results = asyncio.run(go())
     assert [r.name for r in results] == ["Fast model", "Smart model"]
-    assert all(r.ok and r.detail == "mock mode" for r in results)
+    assert all(r.ok is None and r.detail == "skipped: mock mode" for r in results)

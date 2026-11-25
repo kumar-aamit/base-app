@@ -7,7 +7,7 @@ set -euo pipefail
 HTMX_VERSION=2.0.11
 FONT_VERSION=5.3.0
 LUCIDE_VERSION=1.79.0
-ICONS=(shield circle-check triangle-alert wifi-off server monitor-smartphone)
+ICONS=(shield circle-check circle-minus triangle-alert wifi-off server monitor-smartphone)
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENDOR="${ROOT}/baseapp/static/vendor"
