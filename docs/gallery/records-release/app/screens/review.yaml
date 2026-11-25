@@ -1,0 +1,29 @@
+title: Review a record before release
+description: Paste a document due for public release. The app flags personal and exempt information and suggests each redaction with its reason.
+layout: review
+model: smart
+inputs:
+  - {name: document, type: textarea, label: Document text}
+  - {name: request, type: select, label: Release under, options: [Public records request, Court order, Proactive publication]}
+answer:
+  - table: {key: redactions, title: Suggested redactions, columns: [Text, Exemption, Reason]}
+  - text: {key: summary, title: Release summary}
+examples:
+  - label: Code enforcement email
+    inputs:
+      request: Public records request
+      document: >-
+        From: inspector T. Okonkwo. To: building department. Re: 418 Alder Lane (synthetic).
+        Owner Maria Delgado, cell 555-0142, says she cannot pay the fine until her disability
+        check arrives. Neighbor Paul Fenn reported the fence. Our attorney advised on 11/12 that the
+        county should not pursue a lien yet. Next inspection 12/02.
+    mock:
+      redactions:
+        - {Text: "555-0142", Exemption: Personal contact information, Reason: Private phone number of a resident}
+        - {Text: "her disability check", Exemption: Personal financial and medical information, Reason: Reveals a disability and income source}
+        - {Text: "Paul Fenn", Exemption: Complainant identity, Reason: Protects people who report code violations}
+        - {Text: "Our attorney advised on 11/12 that the county should not pursue a lien yet.", Exemption: Attorney-client privilege, Reason: Legal advice to the county}
+      summary: >-
+        Release with four redactions. The owner's name and the property address stay, because code
+        enforcement actions on a property are public. Have the records officer confirm the
+        attorney-client redaction before release.

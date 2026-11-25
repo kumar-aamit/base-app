@@ -1,0 +1,5 @@
+machine,type,line
+P-07 hydraulic press 400 t,press,Line 2
+P-08 hydraulic press 400 t,press,Line 2
+W-12 robot weld cell,weld,Line 3
+C-03 CNC machining center,cnc,Line 4

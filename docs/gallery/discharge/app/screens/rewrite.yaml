@@ -1,0 +1,41 @@
+title: Rewrite discharge instructions
+description: Paste the discharge summary. The app rewrites it as instructions the patient can follow at home, at the reading level and in the language you pick.
+layout: review
+model: fast
+reasoning: off
+inputs:
+  - {name: summary, type: textarea, label: Discharge summary}
+  - {name: level, type: select, label: Reading level, options: [Grade 6, Grade 8, Grade 10]}
+  - {name: language, type: select, label: Language, options: [English, Spanish, Vietnamese, Polish]}
+answer:
+  - text: {key: instructions, title: Going home}
+  - checklist: {key: medicines, title: Your medicines}
+  - checklist: {key: warning, title: Call 911 or come back if}
+examples:
+  - label: Heart failure, grade 6
+    inputs:
+      level: Grade 6
+      language: English
+      summary: >-
+        Pt (synthetic: R. Alvarez, 71) admitted with acute decompensated HFrEF, EF 30%. Diuresed
+        with IV furosemide, net -4.2 L. Discharged on furosemide 40 mg PO BID, metoprolol succinate
+        50 mg daily, lisinopril 10 mg daily. 2 g Na diet, 1.5 L fluid restriction. Daily weights;
+        call if gain >1 kg/day or 2 kg/week. F/u cardiology clinic 7 days. Return for dyspnea at
+        rest, chest pain, syncope.
+    mock:
+      instructions: >-
+        You were in the hospital because your heart was not pumping well and fluid built up in
+        your body. We removed extra fluid with medicine.
+
+
+        At home, weigh yourself every morning after you use the toilet and before breakfast.
+        Eat less salt and drink no more than 6 cups of fluid a day. Your heart clinic visit is in
+        7 days.
+      medicines:
+        - {step: "Furosemide 40 mg: 1 pill in the morning and 1 in the afternoon. It makes you pee out extra fluid.", source: ""}
+        - {step: "Metoprolol 50 mg: 1 pill each morning. It helps your heart beat steadily.", source: ""}
+        - {step: "Lisinopril 10 mg: 1 pill each day. It makes your heart's work easier.", source: ""}
+      warning:
+        - {step: "You gain more than 1 kg (2 pounds) in one day, or 2 kg (4 pounds) in a week: call the heart clinic", source: ""}
+        - {step: "You are short of breath while resting: call 911", source: ""}
+        - {step: "You have chest pain or you faint: call 911", source: ""}

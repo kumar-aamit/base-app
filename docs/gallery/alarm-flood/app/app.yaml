@@ -1,0 +1,5 @@
+name: Alarm Flood
+mark: triangle-alert
+brand: "#B45309"
+site: Grid control center
+screens: [flood]

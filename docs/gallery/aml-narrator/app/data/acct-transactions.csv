@@ -1,0 +1,9 @@
+date,type,amount,counterparty,channel
+2026-11-03,cash deposit,9500.00,,branch 14
+2026-11-04,cash deposit,9400.00,,branch 22
+2026-11-05,cash deposit,9800.00,,branch 14
+2026-11-05,wire out,27000.00,Harbor Trade Ltd (offshore),online
+2026-11-10,cash deposit,9700.00,,branch 31
+2026-11-11,cash deposit,9600.00,,branch 14
+2026-11-12,wire out,18900.00,Harbor Trade Ltd (offshore),online
+2026-11-14,card purchase,62.10,grocery,card

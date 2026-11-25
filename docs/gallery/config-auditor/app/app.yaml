@@ -1,0 +1,5 @@
+name: Config Auditor
+mark: server
+brand: "#0F5C6E"
+site: NOC data center
+screens: [audit]

@@ -1,0 +1,24 @@
+title: Review POS exceptions
+description: Attach the week's point-of-sale exceptions export. The app counts voids, refunds and no-sales per cashier and ranks the patterns worth a review.
+layout: review
+model: fast
+inputs:
+  - {name: export, type: file, label: Exceptions export, accept: ".csv"}
+  - {name: store, type: select, label: Store, options: [0412 Riverside, 0415 Northgate, 0420 Harbor Point]}
+answer:
+  - score: {key: risk, title: Review priority}
+  - table: {key: patterns, title: Patterns worth a review, columns: [Pattern, Who, Evidence]}
+  - checklist: {key: next, title: Next steps for the loss prevention lead}
+examples:
+  - label: Riverside, week 47
+    inputs: {export: data/pos-exceptions.csv, store: 0412 Riverside}
+    mock:
+      risk: {value: 81, label: "Review this week: one cashier stands far out"}
+      patterns:
+        - {Pattern: Refunds without a receipt, Who: C114, Evidence: "28 of 28 refunds had no receipt, $2,882.08 in total"}
+        - {Pattern: "Same register, same hour", Who: C114, Evidence: "Every no-receipt refund on R3 between 11:00 and 12:30"}
+        - {Pattern: Voids above store norm, Who: C101, Evidence: "8 voids against a store median of 6"}
+      next:
+        - {step: "Pull R3 camera footage for 11:00 to 12:30 on two of the days", source: ""}
+        - {step: "Match C114's no-receipt refunds to returned stock in the back room", source: ""}
+        - {step: "Require a manager approval code for no-receipt refunds over $50", source: ""}

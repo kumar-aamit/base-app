@@ -1,0 +1,14 @@
+MASTER SERVICES AGREEMENT (synthetic) between Client and Northwind Cloud Services LLC.
+
+7. Limitation of liability. Each party's total liability under this Agreement shall not exceed the
+fees paid by Client in the three (3) months preceding the claim.
+
+9. Data. Provider may process Client Data in any country where Provider or its subprocessors operate.
+
+12. Term and renewal. This Agreement renews automatically for successive two-year terms unless either
+party gives notice of non-renewal at least one hundred eighty (180) days before the end of the term.
+
+14. Governing law. This Agreement is governed by the laws of the State of Delaware.
+
+15. Indemnity. Provider shall indemnify Client against third-party claims that the Services infringe
+intellectual property rights.

@@ -1,0 +1,30 @@
+title: Summarize an alarm flood
+description: Attach the SCADA alarm export from the event. The app groups the alarms, names the likely initiating event and lists the next checks.
+layout: review
+model: fast
+reasoning: off
+inputs:
+  - {name: alarms, type: file, label: Alarm export, accept: ".csv,.txt"}
+  - {name: substation, type: select, label: Substation, options: [SUB14 Eastfield, SUB09 Millbrook, SUB22 Quarry Road]}
+answer:
+  - text: {key: event, title: Likely initiating event}
+  - table: {key: groups, title: Alarm groups, columns: [Group, Alarms, What it means]}
+  - checklist: {key: checks, title: Next checks}
+examples:
+  - label: SUB14 transformer trip
+    inputs: {alarms: data/sub-14-alarms.csv, substation: SUB14 Eastfield}
+    mock:
+      event: >-
+        Transformer T2 tripped on its Buchholz relay at 14:02:31.120, which points to an internal
+        fault such as gas or an oil surge. Breakers 212 and 222 opened 60 to 90 ms later, Bus 2 lost
+        voltage, and the bus tie closed at 14:02:35.200 to restore it from T1. T1 is now carrying
+        131% load.
+      groups:
+        - {Group: T2 protection trip, Alarms: "3", What it means: "Buchholz trip, then T2 HV and LV breakers open"}
+        - {Group: Bus 2 and feeder undervoltage, Alarms: "5 (cleared)", What it means: "Loss of T2 supply; cleared when the bus tie closed"}
+        - {Group: T1 overload, Alarms: "3", What it means: "T1 picked up Bus 2 load; load and oil temperature rising"}
+        - {Group: Station auxiliaries, Alarms: "2", What it means: "Battery charger on battery, T2 cooling stopped; both follow the trip"}
+      checks:
+        - {step: "Shed or transfer load from T1 now: it is at 131% and top oil temperature is rising", source: ""}
+        - {step: "Do not re-energize T2; a Buchholz trip needs a gas sample and inspection first", source: ""}
+        - {step: "Confirm the battery charger returns once station service is restored", source: ""}

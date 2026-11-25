@@ -1,0 +1,20 @@
+time,point,description,state
+14:02:31.120,SUB14-T2-BUCHHOLZ,Transformer T2 Buchholz trip,ALARM
+14:02:31.180,SUB14-CB-212,Breaker 212 (T2 HV),OPEN
+14:02:31.210,SUB14-CB-222,Breaker 222 (T2 LV),OPEN
+14:02:31.400,SUB14-BUS2-UV,Bus 2 undervoltage,ALARM
+14:02:31.420,SUB14-F21-UV,Feeder 21 undervoltage,ALARM
+14:02:31.430,SUB14-F22-UV,Feeder 22 undervoltage,ALARM
+14:02:31.440,SUB14-F23-UV,Feeder 23 undervoltage,ALARM
+14:02:31.450,SUB14-F24-UV,Feeder 24 undervoltage,ALARM
+14:02:32.010,SUB14-T1-LOAD,Transformer T1 load 104%,ALARM
+14:02:33.500,SUB14-BATT-CHG,Battery charger on battery,ALARM
+14:02:34.900,SUB14-T2-COOL,T2 cooling fans stopped,ALARM
+14:02:35.200,SUB14-CB-BT,Bus tie breaker,CLOSED
+14:02:35.300,SUB14-BUS2-UV,Bus 2 undervoltage,NORMAL
+14:02:35.310,SUB14-F21-UV,Feeder 21 undervoltage,NORMAL
+14:02:35.320,SUB14-F22-UV,Feeder 22 undervoltage,NORMAL
+14:02:35.330,SUB14-F23-UV,Feeder 23 undervoltage,NORMAL
+14:02:35.340,SUB14-F24-UV,Feeder 24 undervoltage,NORMAL
+14:02:36.000,SUB14-T1-LOAD,Transformer T1 load 131%,ALARM
+14:02:40.000,SUB14-T1-OIL,T1 top oil temperature rising,WARN

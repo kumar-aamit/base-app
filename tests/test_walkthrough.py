@@ -10,7 +10,7 @@ APPS = [
     "docs/walkthrough/alert-triage/step-1-build/app",
     "docs/walkthrough/alert-triage/step-2-ground/app",
     "examples/alert-triage/app",
-]
+] + sorted(p.relative_to(ROOT).as_posix() for p in (ROOT / "docs" / "gallery").glob("*/app"))
 
 
 @pytest.mark.parametrize("app", APPS)

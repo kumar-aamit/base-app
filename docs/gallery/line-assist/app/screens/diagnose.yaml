@@ -1,0 +1,31 @@
+title: Diagnose a machine
+description: Pick the machine, say what it is doing and attach the alarm log. The app ranks the likely causes from the plant's own manuals.
+layout: review
+model: fast
+reasoning: off
+inputs:
+  - {name: machine, type: select, label: Machine, options: data/machines.csv}
+  - {name: symptoms, type: textarea, label: "What is it doing?", placeholder: "Noises, alarms, when it started"}
+  - {name: alarms, type: file, label: Alarm log, accept: ".log,.txt,.csv", optional: true}
+knowledge: knowledge/
+answer:
+  - table: {key: causes, title: Likely causes, columns: [Cause, Likelihood, Check]}
+  - checklist: {key: steps, title: "Do this, in order"}
+  - text: {key: parts, title: Parts to bring}
+examples:
+  - label: P-07 slow ram and E-214
+    inputs:
+      machine: P-07 hydraulic press 400 t
+      symptoms: "Ram slows on the down stroke, then alarm E-214 hydraulic oil overtemperature after about 40 minutes"
+      alarms: data/p07-alarms.log
+    mock:
+      causes:
+        - {Cause: Oil-cooler fan not running, Likelihood: High, Check: "Fan current 0.2 A at 06:45:30; nominal 3.1 A"}
+        - {Cause: Blocked cooler core, Likelihood: Medium, Check: Look for dust on the core with the fan off}
+        - {Cause: Low oil level, Likelihood: Low, Check: Sight glass on the tank}
+      steps:
+        - {step: "Lock out P-07: ram on safety blocks, isolator off, lock and tag, accumulator at zero", source: "[4]"}
+        - {step: "Check fuse F-21 and connector X-40 on the cooler fan", source: "[3]"}
+        - {step: "Check the oil level and the cooler core", source: "[2]"}
+        - {step: "After restart, confirm pump pressure returns to 205 bar as the oil cools", source: "[1]"}
+      parts: "Fuse 7702-016, and fan motor 4410-221 in case the motor is seized."

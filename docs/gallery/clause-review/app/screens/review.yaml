@@ -1,0 +1,26 @@
+title: Review a contract against the playbook
+description: Attach the contract and pick the playbook. The app extracts the key clauses and flags where they deviate from the firm's positions.
+layout: review
+model: smart
+inputs:
+  - {name: contract, type: file, label: Contract, accept: ".pdf,.txt"}
+  - {name: playbook, type: select, label: Playbook, options: [Vendor MSA (we are the client), Customer NDA, SaaS reseller]}
+answer:
+  - score: {key: risk, title: Deviation from playbook}
+  - table: {key: clauses, title: Key clauses, columns: [Clause, Contract says, Playbook, Deviation]}
+  - checklist: {key: asks, title: Ask for in the markup}
+examples:
+  - label: Northwind cloud MSA
+    inputs: {contract: data/vendor-msa.txt, playbook: Vendor MSA (we are the client)}
+    mock:
+      risk: {value: 72, label: "Three clauses need a markup before signing"}
+      clauses:
+        - {Clause: 7 Liability cap, Contract says: 3 months of fees, Playbook: 12 months of fees; data breach uncapped, Deviation: High}
+        - {Clause: 9 Data location, Contract says: Any country, Playbook: Named regions only, Deviation: High}
+        - {Clause: 12 Renewal, Contract says: "2-year auto-renewal, 180 days notice", Playbook: "1-year renewal, 60 days notice", Deviation: Medium}
+        - {Clause: 14 Governing law, Contract says: Delaware, Playbook: Delaware or New York, Deviation: None}
+        - {Clause: 15 IP indemnity, Contract says: Provider indemnifies, Playbook: Provider indemnifies, Deviation: None}
+      asks:
+        - {step: "Clause 7: raise the cap to 12 months of fees, and carve data-breach claims out of the cap", source: ""}
+        - {step: "Clause 9: limit processing to the named regions, with notice before adding a subprocessor", source: ""}
+        - {step: "Clause 12: one-year renewals with 60 days notice", source: ""}

@@ -1,0 +1,38 @@
+title: Audit a device config
+description: Paste a router or switch config. The app checks it against the hardening baseline and gives the exact lines to fix.
+layout: review
+model: smart
+inputs:
+  - {name: config, type: textarea, label: Paste the running config}
+  - {name: baseline, type: select, label: Baseline, options: [WAN edge router, Campus access switch, Data center leaf]}
+answer:
+  - score: {key: compliance, title: Baseline compliance}
+  - table: {key: findings, title: Findings, columns: [Rule, Config line, Fix]}
+  - checklist: {key: remediation, title: Apply in this order}
+examples:
+  - label: Edge router with Telnet on
+    inputs:
+      baseline: WAN edge router
+      config: |
+        hostname edge-rtr-02
+        enable password 7 0822455D0A16
+        no service password-encryption
+        snmp-server community public RO
+        ip http server
+        ntp server 192.0.2.10
+        line vty 0 4
+         transport input telnet ssh
+    mock:
+      compliance: {value: 42, label: "5 of 12 baseline rules fail"}
+      findings:
+        - {Rule: No Telnet on VTY lines, Config line: "transport input telnet ssh", Fix: "transport input ssh"}
+        - {Rule: No default SNMP community, Config line: "snmp-server community public RO", Fix: "Remove it; use SNMPv3 with auth and priv"}
+        - {Rule: "Enable secret, not enable password", Config line: "enable password 7 0822455D0A16", Fix: "enable secret 9 <hash>"}
+        - {Rule: HTTP server off, Config line: "ip http server", Fix: "no ip http server"}
+        - {Rule: Password encryption on, Config line: "no service password-encryption", Fix: "service password-encryption"}
+      remediation:
+        - {step: "line vty 0 4 → transport input ssh (keep a console session open first)", source: ""}
+        - {step: "no snmp-server community public, then add the SNMPv3 group and user", source: ""}
+        - {step: "no enable password, then enable secret 9 with a new password", source: ""}
+        - {step: "no ip http server", source: ""}
+        - {step: "service password-encryption, then write memory", source: ""}

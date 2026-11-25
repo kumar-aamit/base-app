@@ -1,0 +1,6 @@
+2026-11-24 06:02:11 P-07 INFO  cycle start, oil 41 C, pump pressure 205 bar
+2026-11-24 06:31:40 P-07 WARN  W-118 oil temperature 58 C
+2026-11-24 06:38:02 P-07 WARN  W-131 ram down-stroke time 2.9 s (nominal 2.1 s)
+2026-11-24 06:44:55 P-07 ALARM E-214 hydraulic oil overtemperature 66 C
+2026-11-24 06:44:56 P-07 INFO  cycle hold, pump pressure 171 bar
+2026-11-24 06:45:30 P-07 WARN  W-140 cooler fan current 0.2 A (nominal 3.1 A)

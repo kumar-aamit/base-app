@@ -1,0 +1,32 @@
+title: Narrate a monitoring alert
+description: Paste the transaction-monitoring alert and the customer profile, and attach the account's transactions. The app lists the red flags and drafts the disposition narrative for the investigator.
+layout: review
+model: smart
+inputs:
+  - {name: alert, type: textarea, label: Monitoring alert}
+  - {name: profile, type: textarea, label: Customer profile, optional: true}
+  - {name: transactions, type: file, label: Account transactions, accept: ".csv", optional: true}
+answer:
+  - score: {key: risk, title: Escalation risk}
+  - table: {key: flags, title: Red flags, columns: [Red flag, Evidence]}
+  - text: {key: narrative, title: Draft narrative for the investigator}
+examples:
+  - label: Structured cash, offshore wires
+    inputs:
+      alert: "Rule CASH-STRUCT-02: 5 cash deposits between $9,000 and $9,999 in 9 days on account 4471-2203 (synthetic)"
+      profile: "Synthetic customer D. Brandt, sole trader, house painting. Declared monthly turnover $6,000. Account opened 2024."
+      transactions: data/acct-transactions.csv
+    mock:
+      risk: {value: 86, label: "Escalate: patterns consistent with structuring and layering"}
+      flags:
+        - {Red flag: "Deposits just under the $10,000 reporting threshold", Evidence: "5 cash deposits of $9,400 to $9,800 between Nov 3 and Nov 11"}
+        - {Red flag: Multiple branches, Evidence: "Deposits at branches 14, 22 and 31"}
+        - {Red flag: Rapid movement offshore, Evidence: "Wires of $27,000 and $18,900 to Harbor Trade Ltd within a day of deposits"}
+        - {Red flag: Activity far above profile, Evidence: "$48,000 cash in 9 days against $6,000 declared monthly turnover"}
+      narrative: >-
+        Between November 3 and November 11, 2026, account 4471-2203 held by D. Brandt received five
+        cash deposits totaling $48,000, each between $9,400 and $9,800, at three branches. Within a
+        day of the deposits, $45,900 was wired in two transfers to Harbor Trade Ltd, an offshore
+        counterparty with no stated link to a house-painting business. The volume is eight times the
+        customer's declared monthly turnover. The pattern is consistent with structuring to avoid
+        currency transaction reporting followed by layering; escalation for SAR review is recommended.
