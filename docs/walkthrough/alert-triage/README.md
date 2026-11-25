@@ -50,6 +50,8 @@ app/
 
 ![Step 1: a verdict](step-1-build.png)
 
+What each line of `app.yaml` does, and how a team changes it later: [app-yaml.md](app-yaml.md).
+
 ## Step 2: Ground it
 
 > Add our three runbooks to the knowledge folder and cite the step behind each action.

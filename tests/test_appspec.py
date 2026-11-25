@@ -34,6 +34,11 @@ def test_bad_brand_names_field_and_fix(tmp_path):
         load_app_spec(write(tmp_path, "brand: blue\n"))
 
 
+def test_unquoted_hex_brand_explains_the_quotes(tmp_path):
+    with pytest.raises(AppSpecError, match=r'brand is empty; put the color in quotes'):
+        load_app_spec(write(tmp_path, "brand: #1D4ED8\n"))
+
+
 def test_unknown_key_is_an_error(tmp_path):
     with pytest.raises(AppSpecError, match=r'unknown field "colour"'):
         load_app_spec(write(tmp_path, "colour: red\n"))

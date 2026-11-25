@@ -70,6 +70,9 @@ def load_app_spec(app_dir: Path) -> AppSpec:
             raise _error("name", "name must be text of 1 to 40 characters; shorten it")
         values["name"] = name.strip()
     if "brand" in data:
+        if data["brand"] is None:
+            raise _error("brand", 'brand is empty; put the color in quotes, like brand: "#1D4ED8", '
+                                  "because # without quotes starts a comment")
         brand = str(data["brand"])
         if not HEX_COLOR.match(brand):
             raise _error("brand", f'brand "{brand}" is not valid; use a hex color like "#1D4ED8"')
