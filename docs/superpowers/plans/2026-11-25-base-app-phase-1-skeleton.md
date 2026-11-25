@@ -55,9 +55,9 @@ base-app/                              git repo (new)
 │   └── static/{css/base.css, vendor/htmx.min.js, vendor/fonts/*.woff2, vendor/icons/*.svg}
 ├── scripts/
 │   ├── vendor-assets.sh               one-time fetch; results are committed
-│   ├── build-team-template.sh         assembles dist/team-template/
+│   ├── build-team-repo.sh         assembles dist/team-repo/
 │   └── verify-image.sh                read-only, arbitrary-UID, startup and memory check
-├── template/                          files seeded into every team repo
+├── team-repo/                         files seeded into every team repo
 │   ├── Dockerfile, Makefile, team.env.example, .gitignore
 │   ├── app/app.yaml
 │   └── .gitea/workflows/build-deploy-openshift.yml
@@ -371,7 +371,7 @@ Run: `pytest -v` — Expected: all tests pass (Tasks 1–4).
 
 - [ ] **Step 6: Look at it**
 
-Run: `APP_DIR=template/app LLM_MOCK=1 uvicorn baseapp.main:app --port 8742` (after Task 6 creates `template/app`, or point `APP_DIR` at a temp folder now) and open `http://localhost:8742/`. Expected: brand header, badge, three passing checks marked "mock mode", no failed requests in the browser network tab.
+Run: `APP_DIR=team-repo/app LLM_MOCK=1 uvicorn baseapp.main:app --port 8742` (after Task 6 creates `team-repo/app`, or point `APP_DIR` at a temp folder now) and open `http://localhost:8742/`. Expected: brand header, badge, three passing checks marked "mock mode", no failed requests in the browser network tab.
 
 - [ ] **Step 7: Commit**
 
@@ -423,15 +423,15 @@ git add -A && git commit -m "feat: base image on ubi9 python-312-minimal"
 ### Task 6: Team repo template
 
 **Files:**
-- Create: `template/Dockerfile`, `template/Makefile`, `template/team.env.example`, `template/.gitignore`, `template/app/app.yaml`, `template/.gitea/workflows/build-deploy-openshift.yml`, `baseapp/wait.py`, `scripts/build-team-template.sh`
+- Create: `team-repo/Dockerfile`, `team-repo/Makefile`, `team-repo/team.env.example`, `team-repo/.gitignore`, `team-repo/app/app.yaml`, `team-repo/.gitea/workflows/build-deploy-openshift.yml`, `baseapp/wait.py`, `scripts/build-team-repo.sh`
 - Test: `tests/test_wait.py`
 
 **Interfaces:**
 - Consumes: the base image paths from Task 5.
 - Produces:
-  - `template/Dockerfile`: `ARG BASE_IMAGE=base-app:latest`, `FROM ${BASE_IMAGE}`, `ARG APP_COMMIT=dev`, `ENV APP_COMMIT=${APP_COMMIT}`, `COPY app/ /opt/app-root/app/`.
+  - `team-repo/Dockerfile`: `ARG BASE_IMAGE=base-app:latest`, `FROM ${BASE_IMAGE}`, `ARG APP_COMMIT=dev`, `ENV APP_COMMIT=${APP_COMMIT}`, `COPY app/ /opt/app-root/app/`.
   - `baseapp.wait.wait_for_commit(url: str, commit: str, timeout: float = 300, interval: float = 2, insecure: bool = True, fetch: Callable[[str], dict] | None = None) -> float`. It polls `{url}/api/version` until `commit` matches, returns the seconds elapsed, and raises `TimeoutError("<url> still reports <seen> after 300 s; expected <commit>")`. `python -m baseapp.wait` reads `APP_URL` from the environment and the commit from `git rev-parse HEAD`, then prints `live in <s> s at <url>`. It uses only the standard library (`urllib`, `ssl`).
-  - `dist/team-template/`, produced by `scripts/build-team-template.sh`: the contents of `template/`, plus `platform/baseapp/` and `platform/requirements.txt`.
+  - `dist/team-repo/`, produced by `scripts/build-team-repo.sh`: the contents of `team-repo/`, plus `platform/baseapp/` and `platform/requirements.txt`.
   - `make dev`: creates `.venv` from `platform/requirements.txt` if it is missing, loads `team.env`, then runs `uvicorn baseapp.main:app --reload --reload-dir app --port 8742` with `PYTHONPATH=platform APP_DIR=app`. `make wait`: loads `team.env` and runs `python -m baseapp.wait`.
   - `team.env.example` keys: `TEAM`, `GITEA_REMOTE`, `APP_URL`, the seven `LLM_*`/`SITE_NAME` variables as the user VM reaches the models.
 
@@ -464,7 +464,7 @@ Run: `pytest tests/test_wait.py -v` — Expected: FAIL, `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement `baseapp/wait.py`, then write the template files**
 
-The workflow is `openclaw-demo/team-app/.gitea/workflows/build-deploy-openshift.yml` with one change: the `Start OpenShift build` step passes `GITEA_SHA: ${{ gitea.sha }}` in `env` and adds `--build-arg APP_COMMIT="${GITEA_SHA}"` to `oc start-build`. `template/app/app.yaml` holds `name: Team app` and `screens: []`, with comments naming each field. `.gitignore` lists `.venv/`, `team.env`, `memory/`, `MEMORY.md`.
+The workflow is `openclaw-demo/team-app/.gitea/workflows/build-deploy-openshift.yml` with one change: the `Start OpenShift build` step passes `GITEA_SHA: ${{ gitea.sha }}` in `env` and adds `--build-arg APP_COMMIT="${GITEA_SHA}"` to `oc start-build`. `team-repo/app/app.yaml` holds `name: Team app` and `screens: []`, with comments naming each field. `.gitignore` lists `.venv/`, `team.env`, `memory/`, `MEMORY.md`.
 
 - [ ] **Step 4: Run to verify they pass**
 
@@ -473,8 +473,8 @@ Run: `pytest -v` — Expected: all pass.
 - [ ] **Step 5: Build a team image from the template and check the commit flows through**
 
 ```bash
-scripts/build-team-template.sh
-cd dist/team-template
+scripts/build-team-repo.sh
+cd dist/team-repo
 podman build -t localhost/team-test:dev --build-arg BASE_IMAGE=localhost/base-app:dev --build-arg APP_COMMIT=0123456789abcdef .
 podman run -d --name tt -p 18742:8742 -e LLM_MOCK=1 localhost/team-test:dev
 sleep 1 && curl -s localhost:18742/api/version; podman rm -f tt
@@ -484,7 +484,7 @@ Expected: `"commit":"0123456789abcdef"` and `"app":"Team app"`.
 
 - [ ] **Step 6: Check `make dev` from the assembled template**
 
-Run in `dist/team-template`: `cp team.env.example team.env`, set `LLM_MOCK=1`, run `make dev`, open `http://localhost:8742/`, edit `app/app.yaml` `name:`, and reload the page. Expected: the new name appears after the reload. Stop with Ctrl-C.
+Run in `dist/team-repo`: `cp team.env.example team.env`, set `LLM_MOCK=1`, run `make dev`, open `http://localhost:8742/`, edit `app/app.yaml` `name:`, and reload the page. Expected: the new name appears after the reload. Stop with Ctrl-C.
 
 - [ ] **Step 7: Commit**
 
@@ -501,7 +501,7 @@ git add -A && git commit -m "feat: team repo template with make dev and make wai
 - Modify: `openshift-automation/templates/buildconfig.yaml`, `openshift-automation/templates/deployment.yaml`, `openshift-automation/team.env.example`, `openshift-automation/scripts/render-openshift-manifests.sh`, `openshift-automation/scripts/bootstrap-openshift-cicd.sh`, `start-lab.sh`
 
 **Interfaces:**
-- Consumes: `base-app/Containerfile` (Task 5), `base-app/scripts/build-team-template.sh` and `dist/team-template/` (Task 6).
+- Consumes: `base-app/Containerfile` (Task 5), `base-app/scripts/build-team-repo.sh` and `dist/team-repo/` (Task 6).
 - Produces: in each team namespace, ImageStream `base-app`, BuildConfig `base-app` (binary source, Docker strategy, `dockerfilePath: Containerfile`, output `base-app:latest`), and a team BuildConfig whose `dockerStrategy.from` is `{kind: ImageStreamTag, name: "base-app:latest"}`.
 
 - [ ] **Step 1: Write the expected render as a check**
@@ -519,7 +519,7 @@ Run: `openshift-automation/scripts/check-render.sh` — Expected: FAIL on the fi
 - `team.env.example`: drop `STORAGE_CLASS` and `DATA_PVC_SIZE`. Add `LLM_FAST_URL`, `LLM_FAST_MODEL`, `LLM_SMART_URL`, `LLM_SMART_MODEL`, `LLM_MOCK=0`, `SITE_NAME="dCloud lab"`, using the in-cluster URLs; the fast URL is a placeholder until the user supplies it.
 - `render-openshift-manifests.sh` and `bootstrap-openshift-cicd.sh`: export the six new variables, with the same defaults, alongside the existing exports.
 - `bootstrap-openshift-cicd.sh`: delete the PVC block. After `apply_template buildconfig`, apply `base-app-imagestream` and `base-app-buildconfig`, then copy only `Containerfile`, `requirements.txt` and `baseapp/` from `${BASE_APP_DIR}` into a `mktemp -d` folder (so `.venv/`, `.git/` and `dist/` are never uploaded) and run `oc start-build base-app --from-dir="<that folder>" --follow --wait -n "${OPENSHIFT_NAMESPACE}"`. `BASE_APP_DIR` defaults to `${ROOT}/../../base-app`; the script dies with a clear message if `${BASE_APP_DIR}/Containerfile` is missing.
-- `start-lab.sh`: default `TEAM_APP_DIR` to `${SCRIPT_DIR}/../base-app/dist/team-template`. Before seeding, run `${SCRIPT_DIR}/../base-app/scripts/build-team-template.sh` so the template matches the source. Change the Contents API commit message to `Add base-app placeholder and OpenShift workflow`.
+- `start-lab.sh`: default `TEAM_APP_DIR` to `${SCRIPT_DIR}/../base-app/dist/team-repo`. Before seeding, run `${SCRIPT_DIR}/../base-app/scripts/build-team-repo.sh` so the template matches the source. Change the Contents API commit message to `Add base-app placeholder and OpenShift workflow`.
 
 - [ ] **Step 4: Run the render check to verify it passes**
 
