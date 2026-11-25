@@ -55,7 +55,7 @@ base-app/                              git repo (new)
 │   └── static/{css/base.css, vendor/htmx.min.js, vendor/fonts/*.woff2, vendor/icons/*.svg}
 ├── scripts/
 │   ├── vendor-assets.sh               one-time fetch; results are committed
-│   ├── build-team-repo.sh         assembles dist/team-repo/
+│   ├── build-team-repo.sh             assembles dist/team-repo/
 │   └── verify-image.sh                read-only, arbitrary-UID, startup and memory check
 ├── team-repo/                         files seeded into every team repo
 │   ├── Dockerfile, Makefile, team.env.example, .gitignore
