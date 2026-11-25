@@ -1,7 +1,7 @@
 # base-app: the platform every team's app image builds FROM.
 FROM registry.access.redhat.com/ubi9/python-312:latest AS builder
 USER 0
-COPY requirements.txt /tmp/requirements.txt
+COPY platform/requirements.txt /tmp/requirements.txt
 RUN /usr/bin/python3.12 -m venv /opt/venv \
  && /opt/venv/bin/pip install --no-cache-dir --upgrade pip \
  && /opt/venv/bin/pip install --no-cache-dir -r /tmp/requirements.txt
@@ -9,7 +9,7 @@ RUN /usr/bin/python3.12 -m venv /opt/venv \
 FROM registry.access.redhat.com/ubi9/python-312-minimal:latest
 USER 0
 COPY --from=builder /opt/venv /opt/venv
-COPY baseapp /opt/base-app/baseapp
+COPY platform/baseapp /opt/base-app/baseapp
 RUN mkdir -p /opt/app-root/app \
  && /opt/venv/bin/python -m compileall -q /opt/venv /opt/base-app \
  && chgrp -R 0 /opt/venv /opt/base-app /opt/app-root \

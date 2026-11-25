@@ -7,7 +7,9 @@ the mock model (`LLM_MOCK=1`) answering each screen's first example.
 ## Step 0: what the team gets at lab start
 
 dCloud automation builds the base image and seeds every team repo with
-`scripts/build-team-repo.sh` (the `team-repo/` folder plus a pinned copy of the platform):
+`scripts/build-team-repo.sh`. The base-app repo's root already has this layout; the script
+copies these paths, leaves out the base-app tooling (Containerfile, tests, scripts, docs), and
+stamps `platform/PIN`:
 
 ```text
 team-07/

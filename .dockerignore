@@ -1,9 +1,6 @@
-.venv
-.git
-.superpowers
-.pytest_cache
+# Containerfile (base image) needs platform/; Dockerfile (a team image, for local tests) needs app/.
+*
+!platform/baseapp
+!platform/requirements.txt
+!app
 **/__pycache__
-dist
-docs
-tests
-team-repo

@@ -82,6 +82,14 @@ def test_pin_mismatch_fails(tmp_path, capsys):
     assert code == 1 and "platform/ was changed" in out
 
 
+def test_missing_pin_skips_the_platform_comparison(tmp_path, capsys):
+    (tmp_path / "app").mkdir()
+    make_app(tmp_path / "app")
+    (tmp_path / "platform" / "baseapp").mkdir(parents=True)
+    code, out = run_check(tmp_path / "app", capsys, platform_dir=tmp_path / "platform")
+    assert code == 0 and "skip  platform/PIN not found" in out
+
+
 def test_smoke_runs_every_example(tmp_path, capsys):
     tc = TestClient(create_app(make_app(tmp_path)))
 

@@ -107,7 +107,9 @@ def main(app_dir: Path | None = None, platform_dir: Path | None = None) -> int:
         failures += 1
         print(f"FAIL  {what}")
 
-    if platform_dir is not None:
+    if platform_dir is not None and not (platform_dir / "PIN").is_file():
+        print("skip  platform/PIN not found, so platform/ is not compared; team repos get one when seeded")
+    elif platform_dir is not None:
         pin = (platform_dir / "PIN").read_text().strip()
         if tree_hash(platform_dir / "baseapp") == pin:
             ok("platform/ is unchanged")

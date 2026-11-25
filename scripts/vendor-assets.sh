@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fetch htmx, fonts and icons from the npm registry into baseapp/static/vendor/.
+# Fetch htmx, fonts and icons from the npm registry into platform/baseapp/static/vendor/.
 # Run on a developer machine only; the outputs are committed so image builds
 # and running pods never reach the internet.
 set -euo pipefail
@@ -10,7 +10,7 @@ LUCIDE_VERSION=1.79.0
 ICONS=(shield circle-check circle-minus triangle-alert wifi-off server monitor-smartphone)
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VENDOR="${ROOT}/baseapp/static/vendor"
+VENDOR="${ROOT}/platform/baseapp/static/vendor"
 TMP="$(mktemp -d)"
 trap 'rm -rf "${TMP}"' EXIT
 
