@@ -12,8 +12,9 @@ rm -rf "${OUT}"
 mkdir -p "${OUT}/platform"
 cp -R "${ROOT}/team-repo/." "${OUT}/"
 cp -R "${ROOT}/baseapp" "${OUT}/platform/baseapp"
-find "${OUT}/platform" -name '__pycache__' -type d -prune -exec rm -rf {} +
+find "${OUT}" -name '__pycache__' -type d -prune -exec rm -rf {} +
 cp "${ROOT}/requirements.txt" "${OUT}/platform/requirements.txt"
 printf -- '-r requirements.txt\nwatchfiles==%s\n' "${WATCHFILES_VERSION}" > "${OUT}/platform/requirements-dev.txt"
+(cd "${ROOT}" && "${PYTHON:-python3.12}" -m baseapp.pin "${OUT}/platform/baseapp") > "${OUT}/platform/PIN"
 
 echo "Wrote ${OUT} ($(find "${OUT}" -type f | wc -l | tr -d ' ') files)"

@@ -34,6 +34,13 @@ def test_search_with_no_overlap_returns_nothing(tmp_path):
     assert KnowledgeIndex.build(tmp_path).search("zebra giraffe") == []
 
 
+def test_sections_are_found_by_their_document_title(tmp_path):
+    (tmp_path / "spray.md").write_text("# Password spray\n\n## Escalate\nCall the incident lead.\n")
+    (tmp_path / "beacon.md").write_text("# Malware beacon\n\n## Escalate\nIsolate the host.\n")
+    hits = KnowledgeIndex.build(tmp_path).search("password spray", k=4)
+    assert [(p.source, p.heading) for p in hits] == [("spray.md", "Escalate")]
+
+
 def test_extract_text_from_log_and_csv():
     assert extract_text("a.log", b"line one\nline two\n") == "line one\nline two\n"
     assert extract_text("a.csv", "user,ok\nj.ortiz,yes\n".encode()) .startswith("user,ok")

@@ -22,7 +22,7 @@
     </span>
   </header>
 
-  <main class="page">
+  <main class="page {% block page_class %}{% endblock %}">
     {% if config_error %}
     <div class="notice notice-fail" role="alert">
       {{ icon("triangle-alert") }}

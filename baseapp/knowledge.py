@@ -32,20 +32,23 @@ class Passage:
     source: str
     heading: str
     text: str
+    title: str = ""
 
 
 def _split_markdown(source: str, text: str) -> list[Passage]:
-    passages, heading, lines = [], "", []
+    passages, title, heading, lines = [], "", "", []
 
     def flush():
         body = "\n".join(lines).strip()
         if body:
-            passages.append(Passage(source, heading, body))
+            passages.append(Passage(source, heading, body, title))
 
     for line in text.splitlines():
         if line.lstrip().startswith("#"):
             flush()
             heading, lines = line.lstrip("# ").strip(), []
+            if line.lstrip().startswith("# ") and not title:
+                title = heading
         else:
             lines.append(line)
     flush()
@@ -62,7 +65,7 @@ class KnowledgeIndex:
 
     def __init__(self, passages: list[Passage]):
         self.passages = passages
-        self.docs = [tokens(f"{p.heading} {p.text}") for p in passages]
+        self.docs = [tokens(f"{p.title} {p.heading} {p.text}") for p in passages]
         self.lengths = [len(d) for d in self.docs]
         self.avg = (sum(self.lengths) / len(self.docs)) if self.docs else 0
         df = Counter(t for d in self.docs for t in set(d))

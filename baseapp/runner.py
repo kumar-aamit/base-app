@@ -124,7 +124,7 @@ async def run_screen(rt: Runtime, screen: ScreenSpec, inputs: dict[str, str], ex
     variables.update(extra)
 
     query = " ".join(str(v)[:1000] for v in variables.values() if isinstance(v, str))
-    sources = rt.indexes[screen.name].search(query, k=3) if screen.knowledge else []
+    sources = rt.indexes[screen.name].search(query, k=4) if screen.knowledge else []
     variables.update(site=ctx.site, app_name=rt.spec.name)
     prompt = _render(rt, screen, variables) + (_sources_block(sources) if sources else "")
 
@@ -148,6 +148,6 @@ async def run_screen(rt: Runtime, screen: ScreenSpec, inputs: dict[str, str], ex
         raise RunError("the answer did not fit the screen: " + "; ".join(problems))
     return RunResult(
         answer=answer, sources=sources, prompt=prompt, tier=screen.model,
-        model_name=endpoint.model or f"{screen.model} model", model_ms=model_ms,
+        model_name=endpoint.model, model_ms=model_ms,
         total_ms=round((time.perf_counter() - start) * 1000), mocked=rt.settings.mock,
     )
