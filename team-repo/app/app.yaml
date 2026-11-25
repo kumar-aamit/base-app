@@ -4,3 +4,52 @@ name: Team app          # shown in the header, 1 to 40 characters
 # brand: "#1D4ED8"      # hex color for the mark and header accent
 # site: HQ data center  # where data stays, shown in the trust signals
 screens: []             # empty shows the placeholder page
+
+
+
+
+They're meant to look different, because the team repo isn't a clone of base-app. It's built from two of base-app's folders. Here's how one maps onto the other:
+
+
+
+base-app/
+├── base-app-paper.md            ✓ design paper
+├── requirements.txt             ✓ pinned runtime packages (goes into the image)
+├── requirements-dev.txt         ✓ + pytest (never in the image)
+├── Containerfile                ✓ builds the base image
+├── baseapp/                     ✓ the platform package
+│   ├── config.py  appspec.py  health.py  main.py  wait.py
+│   ├── templates/  static/      ✓ placeholder page, CSS, vendored htmx/fonts/icons
+│   ├── screens/ layouts/ llm/   phase 2–3: screen engine, the three layouts, model client
+│   └── check.py  smoke.py       phase 2: make check, make smoke
+├── template/                    files copied into every team repo
+│   ├── Dockerfile  Makefile  team.env.example  .gitignore   ✓
+│   ├── app/app.yaml             ✓ placeholder app
+│   ├── .gitea/workflows/        ✓ your existing workflow, plus the commit build-arg
+│   ├── AGENTS.md                phase 4
+│   ├── skills/base-app/         phase 4: OpenClaw skill
+│   ├── examples/                phase 2–3: Alert Triage, Line Assist, Floor Help
+│   └── catalog/                 phase 4: 27 briefs
+├── scripts/                     ✓ vendor-assets, build-team-template, verify-image
+├── tests/                       ✓
+├── docs/                        ✓ plans, screenshots
+└── dist/team-template/          generated, git-ignored: template/ + platform/ copy
+
+
+team-7/
+├── AGENTS.md          rules OpenClaw follows                     phase 4
+├── team.env           team number, Gitea remote, app URL         (from team.env.example ✓)
+├── Dockerfile         FROM base-app, then COPY app/              ✓
+├── Makefile           dev, wait ✓ · check, smoke (phase 2)
+├── .gitea/workflows/  build and deploy on push                   ✓
+├── app/               THE ONLY FOLDER OPENCLAW EDITS
+│   ├── app.yaml       name, mark, brand, site, screens           ✓
+│   ├── screens/       one YAML file per screen                   phase 2
+│   ├── prompts/       one Markdown prompt per screen             phase 2
+│   ├── data/          synthetic sample data                      phase 2
+│   ├── knowledge/     documents searched before each answer      phase 2
+│   └── hooks.py       optional Python, standard library only     phase 2
+├── catalog/           27 briefs                                  phase 4
+├── examples/          3 finished apps                            phase 2–3
+├── skills/base-app/   OpenClaw skill                             phase 4
+└── platform/          read-only copy of baseapp, for make dev    ✓
