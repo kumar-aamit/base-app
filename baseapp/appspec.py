@@ -44,10 +44,12 @@ def load_app_spec(app_dir: Path) -> AppSpec:
     path = Path(app_dir) / "app.yaml"
     if not path.is_file():
         return AppSpec()
+    text = path.read_text(encoding="utf-8")
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data = yaml.safe_load(text)
     except yaml.MarkedYAMLError as exc:
-        line = exc.problem_mark.line + 1 if exc.problem_mark else "?"
+        last_line = max((i + 1 for i, s in enumerate(text.splitlines()) if s.strip()), default=1)
+        line = min(exc.problem_mark.line + 1, last_line) if exc.problem_mark else "?"
         raise _error(f"line {line}", f"{exc.problem or 'invalid YAML'}; check the indentation and brackets") from None
     except yaml.YAMLError as exc:
         raise _error("file", f"invalid YAML ({exc}); check the indentation and brackets") from None
