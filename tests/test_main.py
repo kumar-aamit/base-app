@@ -48,6 +48,10 @@ def test_checks_json_and_fragment(tmp_path):
     assert "<html" not in frag and "mock mode" in frag
 
 
+def test_page_declares_inline_favicon(tmp_path):
+    assert '<link rel="icon" href="data:,">' in client(tmp_path).get("/").text
+
+
 def test_no_external_urls_in_pages_or_css(tmp_path):
     c = client(tmp_path)
     bodies = [c.get("/").text, c.get("/static/css/base.css").text]
