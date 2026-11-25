@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel placeholder">
+  <span class="placeholder-mark" aria-hidden="true">{{ icon("monitor-smartphone") }}</span>
+  <h1>Your app will appear here</h1>
+  <p class="lede">Ask OpenClaw to build it. This page checks what it needs.</p>
+
+  <div class="checks" hx-get="/api/checks" hx-trigger="load, every 10s" hx-swap="innerHTML">
+    <p class="muted">Checking…</p>
+  </div>
+</section>
+{% endblock %}

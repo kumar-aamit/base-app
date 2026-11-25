@@ -1,0 +1,159 @@
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("/static/vendor/fonts/atkinson-hyperlegible-next-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("/static/vendor/fonts/atkinson-hyperlegible-next-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Mono";
+  src: url("/static/vendor/fonts/atkinson-hyperlegible-mono-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --brand: #17202B;
+  --ground: #ECEFF3;
+  --panel: #FFFFFF;
+  --ink: #17202B;
+  --muted: #5B6675;
+  --line: #D5DAE1;
+  --ok: #0E7A5F;
+  --fail: #A85B00;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ground);
+  color: var(--ink);
+  font: 400 16px/1.5 "Atkinson Hyperlegible Next", system-ui, sans-serif;
+}
+
+code { font-family: "Atkinson Hyperlegible Mono", ui-monospace, monospace; font-size: 0.92em; }
+
+.icon { width: 1.1em; height: 1.1em; flex: none; vertical-align: -0.2em; }
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  border-top: 4px solid var(--brand);
+}
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 18px;
+}
+.mark .icon { width: 20px; height: 20px; }
+.app-name { font-weight: 700; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.page { flex: 1; width: 100%; max-width: 760px; margin: 0 auto; padding: 32px 24px; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 32px;
+}
+
+.placeholder { text-align: center; }
+.placeholder-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--ground);
+  color: var(--brand);
+}
+.placeholder-mark .icon { width: 28px; height: 28px; }
+.placeholder h1 { margin: 16px 0 4px; font-size: 26px; }
+.lede { margin: 0 0 24px; color: var(--muted); }
+.muted { color: var(--muted); }
+
+.checks { text-align: left; }
+.check-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.check {
+  display: grid;
+  grid-template-columns: 24px 130px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.check-icon { display: grid; place-items: center; }
+.check-ok .check-icon { color: var(--ok); }
+.check-fail .check-icon { color: var(--fail); }
+.check-name { font-weight: 700; }
+.check-detail { color: var(--muted); overflow-wrap: anywhere; }
+.check-fail .check-detail { color: var(--fail); }
+.check-ms { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+.notice-fail { border-left: 4px solid var(--fail); }
+.notice-fail > .icon { color: var(--fail); margin-top: 3px; }
+.notice code { display: block; margin-top: 4px; overflow-wrap: anywhere; }
+
+.app-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 16px 24px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.sep { color: var(--line); }
+
+@media (max-width: 560px) {
+  .app-header { padding: 10px 16px; }
+  .page { padding: 20px 12px; }
+  .panel { padding: 20px; }
+  .check { grid-template-columns: 24px 1fr auto; }
+  .check-detail { grid-column: 2 / -1; }
+}

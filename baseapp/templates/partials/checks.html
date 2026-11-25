@@ -1,0 +1,10 @@
+<ul class="check-list">
+  {% for row in rows %}
+  <li class="check {{ 'check-ok' if row.ok else 'check-fail' }}">
+    <span class="check-icon">{{ icon("circle-check" if row.ok else "triangle-alert") }}</span>
+    <span class="check-name">{{ row.name }}</span>
+    <span class="check-detail">{{ row.detail }}</span>
+    <span class="check-ms">{% if row.ms is not none %}{{ row.ms }} ms{% endif %}</span>
+  </li>
+  {% endfor %}
+</ul>
