@@ -28,6 +28,7 @@ class Settings:
     api_key: str | None
     fast: ModelEndpoint
     smart: ModelEndpoint
+    lab_user: str = ""
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] = os.environ) -> "Settings":
@@ -40,4 +41,5 @@ class Settings:
             api_key=env.get("LLM_API_KEY", "").strip() or None,
             fast=ModelEndpoint(env.get("LLM_FAST_URL", ""), env.get("LLM_FAST_MODEL", "")),
             smart=ModelEndpoint(env.get("LLM_SMART_URL", ""), env.get("LLM_SMART_MODEL", "")),
+            lab_user=env.get("LAB_USER", "").strip(),
         )
