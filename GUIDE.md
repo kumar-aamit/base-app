@@ -103,6 +103,27 @@ counts them before the model answers.
 
 ![After prompt 3: severity, techniques and next steps](guide-images/step-3-shape.png)
 
+## Or: build one of the other use cases
+
+The start page has eight more use cases, from Config Auditor (IT) to Clause Review (legal). Each
+is one prompt that builds the whole app at once, instead of three steps.
+
+1. On the start page, click the use case. The preview shows the inputs and the answer it builds.
+2. Click **Copy prompt**, paste it into a new harness chat and send it. Your repo holds one app,
+   so this replaces what you built. To keep it, start your message with *Add this as a second
+   screen:* and paste the prompt after it.
+3. The harness makes up the sample data, documents and examples, checks, pushes and reports your
+   app URL. That takes a few minutes; the start page reloads when the new build is live.
+4. Open your app and click each example. Check that:
+   - the answer has the parts the preview showed (a score, a table, a checklist, text);
+   - each cited section is in the documents the harness made up;
+   - counts the prompt asks for exactly (voids, deposits, alarms) match the sample data.
+5. Fix what looks off one request at a time, saying what you expected: *The hardened switch passes
+   11 of 12 rules, so its score should be above 90.* Then use the ideas in step 5.
+
+No brief sits behind these prompts, so the harness decides the details. If an answer looks wrong,
+describe what you expected rather than rewriting the whole prompt.
+
 ## Step 5: make it yours
 
 Send one change at a time, and check the app after each one. Ideas:
