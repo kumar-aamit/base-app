@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pytest
@@ -17,3 +18,12 @@ APPS = [
 def test_every_walkthrough_step_passes_make_check(app, capsys):
     code = check.main(app_dir=ROOT / app)
     assert code == 0, capsys.readouterr().out
+
+
+def prompts(path: str) -> list[str]:
+    return re.findall(r"```text\n(.*?)```", (ROOT / path).read_text(), re.S)
+
+
+def test_guide_sends_the_briefs_three_prompts_word_for_word():
+    brief = prompts("catalog/it-alert-triage.md")
+    assert len(brief) == 3 and prompts("GUIDE.md") == brief

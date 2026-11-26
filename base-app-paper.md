@@ -334,11 +334,11 @@ Errors name the file, the field and the fix, because that is what a model can ac
 
 Three prompts build the lead app, Alert Triage, in the review layout, and every later prompt adds one building block. Lab users type them, and they need not be technical, so each prompt is plain language and the guide page gives basic instructions around it. `docs/walkthrough/alert-triage/` shows `app/` after each of the three prompts.
 
-1. **Build:** "Build the Alert Triage app from catalog/it-alert-triage.md for the HQ security team." The harness writes `app.yaml`, the triage screen, its prompt and synthetic data, then checks, pushes and reports the app's URL. A team's own idea works the same way, as long as it fits the review layout.
-2. **Ground it:** "Add our three runbooks to the knowledge folder and cite the step behind each action."
-3. **Shape the answer:** "Show a severity score, a table of attack techniques and a checklist of next steps. Count the failed logins exactly instead of letting the model guess, and add the locked-out user who was already reset as a low-severity example."
+1. **Build:** name, mark, brand and site; the triage screen with alert, logs and asset inputs and a Verdict; the asset list and the spray log; two examples. The harness writes `app.yaml`, the screen, its prompt and synthetic data, then checks, pushes and reports the app's URL. A team's own idea works the same way, as long as it fits the review layout.
+2. **Ground it:** three runbooks in `knowledge/`, and a Next steps checklist that cites them.
+3. **Shape the answer:** a Severity score and an Attack techniques table, `hooks.py` to count the failed logins exactly, and the locked-out user as a low-severity example.
 
-The exact prompts ship in every team repo, in the brief's "Prompts to send" section (`catalog/it-alert-triage.md`).
+Each prompt spells out everything its step builds, so the result does not depend on the harness rereading the brief. The full text ships in every team repo, in the brief's "Prompts to send" section (`catalog/it-alert-triage.md`) and in `GUIDE.md`; a test keeps the two identical.
 
 After that, one prompt per feature:
 

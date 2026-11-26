@@ -36,7 +36,9 @@ green or amber; here they are skipped because this is mock mode.
 
 ## Step 1: Build
 
-> Build the Alert Triage app from catalog/it-alert-triage.md for the HQ security team.
+> **Prompt 1** ([full text](../../../catalog/it-alert-triage.md#prompt-1-build)): build Alert
+> Triage for the HQ security team, with the triage screen's three inputs, a Verdict, the asset
+> list, the spray log and two examples.
 
 The harness writes five files in `app/` ([step-1-build/app](step-1-build/app)):
 
@@ -57,7 +59,8 @@ What each line of `app.yaml` does, and how a team changes it later: [app-yaml.md
 
 ## Step 2: Ground it
 
-> Add our three runbooks to the knowledge folder and cite the step behind each action.
+> **Prompt 2** ([full text](../../../catalog/it-alert-triage.md#prompt-2-ground-it)): add the
+> three runbooks to knowledge/ and a Next steps checklist that cites them.
 
 Adds `knowledge/` and a cited checklist ([step-2-ground/app](step-2-ground/app)):
 
@@ -86,9 +89,9 @@ the model are listed under the answer.
 
 ## Step 3: Shape the answer
 
-> Show a severity score, a table of attack techniques and a checklist of next steps. Count the
-> failed logins exactly instead of letting the model guess, and add the locked-out user who was
-> already reset as a low-severity example.
+> **Prompt 3** ([full text](../../../catalog/it-alert-triage.md#prompt-3-shape-the-answer)): add
+> a Severity score and an Attack techniques table, a hook that counts the failed logins exactly,
+> and the locked-out user as a low-severity example.
 
 Adds `hooks.py`, two blocks and the benign example. This is `examples/alert-triage/app/`, the finished app that
 ships in every team repo:

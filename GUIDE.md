@@ -43,9 +43,37 @@ Values in `<angle brackets>` come from your lab page.
 
 ## Step 2: build the app (prompt 1)
 
-Send:
+Copy the whole block and send it:
 
-> Build the Alert Triage app from catalog/it-alert-triage.md for the HQ security team.
+```text
+Build an app called Alert Triage for the HQ security team. Use the shield mark, brand color
+#1D4ED8 and site "HQ data center".
+
+Give it one screen, "Triage an alert", in the review layout with the smart model. Inputs:
+- "Paste the alert": long text
+- "Attach the logs": an optional file (.log, .txt or .csv)
+- "Affected system": an optional select filled from data/assets.csv
+The answer is one text block, "Verdict": two or three sentences on what most likely happened,
+how sure you are and why, quoting the log lines that matter with their timestamps.
+
+Make up the sample data, using only 192.0.2.0/24, 198.51.100.0/24 and 203.0.113.0/24 addresses
+and invented names:
+- data/assets.csv with columns hostname, role, owner, criticality, location and six systems:
+  vpn-gw-01 (VPN gateway), mail-01 (mail relay), dc-01 (domain controller), fin-db-02 (finance
+  database), web-ext-01 (public website) and hr-laptop-114 (an HR laptop).
+- data/vpn-spray.log, about 230 lines like
+  "2026-11-24T01:52:08Z vpn-gw-01 auth user=a.chen src=203.0.113.45 result=FAIL reason=bad_password":
+  normal logins from 198.51.100.x, then 212 failures for 9 users from 203.0.113.45 between 01:52
+  and 02:12, then a success for j.ortiz from that address at 02:14:07 with mfa=none
+  reason=legacy_client, and a connection from that session to fin-db-02 at 02:16:31.
+
+Add two examples, each with a mock answer:
+- "Password spray, then a login": the alert "212 failed VPN logins for 9 users from
+  203.0.113.45, then a success for j.ortiz at 02:14", the spray log and vpn-gw-01.
+- "Reported phishing email": the alert "m.reyes reported an email from
+  payroll-update@examp1e-hr.example asking staff to confirm bank details through a link",
+  no logs, and mail-01.
+```
 
 The harness writes the app's files in `app/`, runs `make check`, pushes, waits for the new
 build, and reports your app URL with timings. That takes a few minutes. Then:
@@ -59,9 +87,22 @@ build, and reports your app URL with timings. That takes a few minutes. Then:
 
 ## Step 3: ground it in your runbooks (prompt 2)
 
-Send:
+Copy the whole block and send it:
 
-> Add our three runbooks to the knowledge folder and cite the step behind each action.
+```text
+Add three runbooks to a knowledge/ folder, each a Markdown file with one # title and short
+## sections:
+- password-spray.md, "Runbook: password spray against VPN or single sign-on":
+  Signs, Contain, Investigate, Escalate
+- phishing.md, "Runbook: reported phishing email": Signs, Contain, Investigate, Recover
+- malware-beacon.md, "Runbook: suspected malware beacon": Signs, Contain, Investigate, Recover
+
+Search them on the triage screen. Add a checklist answer, "Next steps": at most six steps, in
+the order the analyst should do them, each specific to this alert (name the address, account or
+system) and citing the runbook passage it came from as [n]. Leave the source empty for a step no
+runbook covers. Update both examples' mock answers with steps that cite passages the search
+really finds.
+```
 
 Refresh and click the same example. Now there is a **Next steps** checklist, each step with a
 chip naming the runbook section it came from, and **Sources searched** under the answer.
@@ -70,11 +111,29 @@ chip naming the runbook section it came from, and **Sources searched** under the
 
 ## Step 4: shape the answer (prompt 3)
 
-Send:
+Copy the whole block and send it:
 
-> Show a severity score, a table of attack techniques and a checklist of next steps. Count the
-> failed logins exactly instead of letting the model guess, and add the locked-out user who was
-> already reset as a low-severity example.
+```text
+Shape the triage answer into four parts, in this order:
+- "Severity": a score from 0 to 100 with a one-line label. 80 or more means act now, 40 to 79
+  means investigate today, under 40 means likely benign or already handled. Raise it when the
+  affected system's criticality is high or critical.
+- "Verdict": the text block you have now.
+- "Attack techniques": a table with columns Technique, ID and Evidence, one row per MITRE
+  ATT&CK technique the evidence supports.
+- "Next steps": the checklist you have now.
+
+Add hooks.py so the app counts before the model answers. From the attached log: the number of
+failed logins, their time range, the accounts tried, failures by source address, and any
+success from a failing address after the failures. From data/assets.csv: the affected system's
+role, owner and criticality. Put both in the prompt and tell the model the counts are exact.
+
+Add a third example, "Locked-out user, already reset": the alert "Account lockout for s.ito on
+the VPN after 6 failed logins", vpn-gw-01, and a new data/vpn-lockout.log where s.ito fails 5
+times from 198.51.100.23, is locked out at 09:00:16, the help desk resets the password at 09:21
+after a callback, and s.ito logs in with MFA at 09:24. Its severity should be under 40. Update
+all three mock answers to the new shape.
+```
 
 Refresh and try all three examples:
 
