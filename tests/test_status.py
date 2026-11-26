@@ -41,8 +41,16 @@ def test_status_page_has_ten_tiles_with_meanings_and_no_header_badge(tmp_path):
 
 def test_model_tile_lists_both_models_with_precision(tmp_path):
     page = text(client(tmp_path, LLM_FAST_MODEL="meta-llama/Llama-3.1-8B-Instruct",
-                       LLM_SMART_MODEL="nvidia/nemotron-3.5-super").get("/status"))
+                       LLM_SMART_MODEL="nvidia/nemotron-3.5-super",
+                       LLM_FAST_PRECISION="FP8", LLM_SMART_PRECISION="NVFP4").get("/status"))
     assert "nemotron-3.5-super · NVFP4\nLlama-3.1-8B-Instruct · FP8" in page
+
+
+def test_model_tile_claims_no_precision_unless_set(tmp_path):
+    page = text(client(tmp_path, LLM_FAST_MODEL="meta-llama/Llama-3.1-8B-Instruct",
+                       LLM_SMART_MODEL="nvidia/nemotron-3.5-super").get("/status"))
+    assert "nemotron-3.5-super\nLlama-3.1-8B-Instruct" in page
+    assert "NVFP4" not in page and "FP8" not in page
 
 
 def test_footer_shows_app_version_build_and_platform(tmp_path):
