@@ -1,6 +1,6 @@
 # base-app: decisions and file tree
 
-Where the base-app platform and the team repo stand as of 2026-11-26 (branch `final`, created
+Where the base-app platform and each lab user's repo stand as of 2026-11-26 (branch `final`, created
 from tag `phase-2`). The design paper is `base-app-paper.md`; where this file and the paper differ,
 this file describes what is built.
 
@@ -20,22 +20,22 @@ These are settled; reopen them only with the lab owner.
 
 | Decision | Detail |
 |---|---|
-| One platform, one folder per team | Every team repo is the platform plus one `app/` folder. The agentic harness edits only `app/`. |
+| One platform, one folder per user | Every lab user's repo is the platform plus one `app/` folder. The agentic harness edits only `app/`. |
 | Lead use case | Alert Triage (IT security), built in the Review layout in three prompts: Build, Ground it, Shape the answer. |
-| Team repo name | `team-<N>`, from the lab user number (`user7` → `team-7`), as `start-lab.sh` already derives it. |
-| Base image build | dCloud automation builds and deploys the base image at lab start. Teams never build it. |
-| Team image | The team's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and an `APP_COMMIT` build arg. |
-| Seeding | `scripts/build-team-repo.sh` writes `dist/team-repo/`; `start-lab.sh` commits it into each team's code repo through the repo server's Contents API (`TEAM_APP_DIR`). The `start-lab.sh` wiring is still to do. |
+| Repo name | One repo per lab user, `user-<N>` from the lab user number (`user7` → `user-7`). The lab is single-user sessions: each user has their own repo, k8s namespace, app URL and harness. `start-lab.sh` derives the name today as `team-<N>`; rename it there. |
+| Base image build | dCloud automation builds and deploys the base image at lab start. Lab users never build it. |
+| App image | The repo's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and an `APP_COMMIT` build arg. |
+| Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/`; `start-lab.sh` commits it into each user's code repo through the repo server's Contents API (`LAB_APP_DIR`). The `start-lab.sh` wiring is still to do. |
 
 ### Repo layout
 
 | Decision | Detail |
 |---|---|
-| The repo root is laid out as a team repo | What you open is what a team gets, plus base-app tooling beside it. |
+| The repo root is laid out as a lab user's repo | What you open is what each lab user gets, plus base-app tooling beside it. |
 | `platform/baseapp/` is the source | Not a generated copy. The package is `baseapp`, not `platform`, which would shadow the standard library. |
-| Seed by explicit list | `SEED` in `build-team-repo.sh`: GUIDE.md, guide-images, AGENTS.md, Dockerfile, Makefile, team.env.example, .gitignore, .gitea, app, catalog, examples, skills, platform. |
+| Seed by explicit list | `SEED` in `build-lab-repo.sh`: GUIDE.md, guide-images, AGENTS.md, Dockerfile, Makefile, lab.env.example, .gitignore, .gitea, app, catalog, examples, skills, platform. |
 | Base-app only | Containerfile, .dockerignore, tests, scripts, docs, base-app-paper.md, pyproject.toml, requirements-test.txt. `tests/test_seed.py` fails if a new top-level path is in neither list. |
-| `platform/PIN` | A hash of `platform/baseapp`, written only into the seeded copy. `make check` in a team repo fails if `platform/` was edited; in this repo it skips the comparison. |
+| `platform/PIN` | A hash of `platform/baseapp`, written only into the seeded copy. `make check` in a lab user's repo fails if `platform/` was edited; in this repo it skips the comparison. |
 | Working copy | `/Users/amitkumar/PycharmProjects/hackathon-v2`. The older copy under `Documents/demo-guide/base-app` is stale. Remote `origin` is the public GitHub repo `kumar-aamit/base-app` (`main`, tags `phase-1` and `phase-2`); `final` is local only. |
 
 ### Stack and runtime
@@ -60,7 +60,7 @@ These are settled; reopen them only with the lab owner.
 | Reasoning switch | `reasoning: off` sends `chat_template_kwargs: {enable_thinking: false}`. |
 | Mock mode | `LLM_MOCK=1`: no model is called; each example's `mock:` answer is returned, or a placeholder built from the blocks. The placeholder page shows model checks as grey "skipped: mock mode", not green. |
 
-### What a team writes in app/
+### What a user writes in app/
 
 | Decision | Detail |
 |---|---|
@@ -82,7 +82,7 @@ These are settled; reopen them only with the lab owner.
 |---|---|
 | `make dev` | Runs the app on port 8742 with live reload of `app/`. |
 | `make check` | Under 5 s, no GPU: platform PIN; external URLs; stdlib-only hook imports; app.yaml and every screen, with `knowledge:` confined to `app/`; brand contrast; every screen renders; every example runs end to end against the mock and renders; mock citations exist. |
-| `make wait` | Waits until the team's app URL serves the pushed commit. |
+| `make wait` | Waits until the user's app URL serves the pushed commit. |
 | `make smoke` | Runs every example against the deployed app and real models and prints timings. |
 
 ### Trust signals
@@ -96,7 +96,7 @@ These are settled; reopen them only with the lab owner.
 
 ## Open items
 
-- Wire `start-lab.sh` to seed `dist/team-repo/` (`TEAM_APP_DIR`), write each team's `team.env`, and pass `BASE_IMAGE` to the BuildConfig (phase 1 Task 7); then the on-cluster acceptance run (Task 8).
+- Wire `start-lab.sh` to seed `dist/lab-repo/`, write each user's `lab.env`, and pass `BASE_IMAGE` to the BuildConfig (phase 1 Task 7); then the on-cluster acceptance run (Task 8). In `start-lab.sh`, rename `TEAM_APP_DIR` to `LAB_APP_DIR`, `team-<N>` to `user-<N>` and `team.env` to `lab.env` to match base-app.
 - Decide whether the lab-start machine fetches the public GitHub repo or a copy on the lab's code repo server.
 - Run the examples against the real models; every screenshot so far is mock mode.
 - Phase 3: workspace and assistant layouts, streaming, follow-up chat, charts, image input. Phase 4: the other 26 catalog briefs and harness provisioning.
@@ -106,19 +106,20 @@ Done on `final`:
 
 - [x] Confine `knowledge:` to folders inside `app/`: absolute paths, `..` and symlinks out of `app/` fail at load time and in `make check`.
 - [x] Add to the skill: quote YAML values that contain `, ? : #`. (`AGENTS.md` has no YAML section, so the rule is only in the skill.)
-- [x] Update the paper: the team repo's `Dockerfile`, review layout only, Alert Triage in three prompts, generic terms, and unbuilt features marked phase 3 or phase 4.
+- [x] Update the paper: the repo's `Dockerfile`, review layout only, Alert Triage in three prompts, generic terms, and unbuilt features marked phase 3 or phase 4.
 - [x] Create a git remote: `origin` on GitHub.
+- [x] Single-user lab sessions: no "team" for the lab user anywhere. `lab.env` (`LAB_USER`), `build-lab-repo.sh`, `dist/lab-repo/`, repos named `user-<N>`, and the default app name "Your app".
 
 ## File tree
 
 Tracked files on `final`. Vendored assets, plans and screenshots are collapsed (`…`), and so are the
 gallery apps and walkthrough steps, which have the same shape as `examples/alert-triage/app/`.
-Paths marked **seeded** are what `build-team-repo.sh` copies into every team repo.
+Paths marked **seeded** are what `build-lab-repo.sh` copies into every lab user's repo.
 
 ```text
 hackathon-v2/
 ├── .gitea/workflows/build-deploy-openshift.yml   seeded: build and deploy on push
-├── app/                                          seeded: THE team's app; starts as the placeholder
+├── app/                                          seeded: THE user's app; starts as the placeholder
 │   └── app.yaml
 ├── catalog/                                      seeded: briefs a first prompt can name
 │   └── it-alert-triage.md
@@ -160,7 +161,7 @@ hackathon-v2/
 │       │   └── triage.yaml
 │       ├── app.yaml
 │       └── hooks.py
-├── platform/                                     seeded (+ PIN); read-only for teams
+├── platform/                                     seeded (+ PIN); read-only for users
 │   ├── baseapp/                                  the platform source
 │   │   ├── static/
 │   │   │   ├── css/base.css
@@ -195,7 +196,7 @@ hackathon-v2/
 │   ├── requirements-dev.txt
 │   └── requirements.txt
 ├── scripts/                                      base-app only
-│   ├── build-team-repo.sh                        writes dist/team-repo/
+│   ├── build-lab-repo.sh                         writes dist/lab-repo/
 │   ├── vendor-assets.sh                          refreshes platform/baseapp/static/vendor/
 │   └── verify-image.sh                           restricted-pod run: ready < 1 s, idle < 64 MiB
 ├── skills/                                       seeded: the harness skill
@@ -220,9 +221,9 @@ hackathon-v2/
 ├── guide-images/                                 seeded: the step screenshots GUIDE.md shows
 ├── base-app-paper.md                             base-app only: the design paper
 ├── Containerfile                                 base-app only: the base image
-├── Dockerfile                                    seeded: the team image
+├── Dockerfile                                    seeded: the app image
 ├── Makefile                                      seeded: dev, check, wait, smoke
 ├── pyproject.toml                                base-app only: pytest settings
 ├── requirements-test.txt                         base-app only
-└── team.env.example                              seeded
+└── lab.env.example                               seeded
 ```

@@ -1,28 +1,28 @@
-# Walkthrough: a team builds Alert Triage in three prompts
+# Walkthrough: a lab user builds Alert Triage in three prompts
 
-What a team's repo holds at lab start, and what `app/` looks like after each prompt. Every
+What a lab user's repo holds at lab start, and what `app/` looks like after each prompt. Every
 stage passes `make check`; `tests/test_walkthrough.py` keeps it that way. The screenshots are
 the mock model (`LLM_MOCK=1`) answering each screen's first example.
 
-## Step 0: what the team gets at lab start
+## Step 0: what each lab user gets at lab start
 
-dCloud automation builds the base image and seeds every team repo with
-`scripts/build-team-repo.sh`. The base-app repo's root already has this layout; the script
+dCloud automation builds the base image and seeds every lab user's repo with
+`scripts/build-lab-repo.sh`. The base-app repo's root already has this layout; the script
 copies these paths, leaves out the base-app tooling (Containerfile, tests, scripts, docs), and
 stamps `platform/PIN`:
 
 ```text
-team-07/
+user-7/
 ├── GUIDE.md                       the lab user's step-by-step guide (+ guide-images/)
 ├── AGENTS.md                      the 9 rules the agentic harness follows
 ├── skills/base-app/SKILL.md       how to write app/: fields, blocks, recipes, the loop
 ├── catalog/it-alert-triage.md     the brief prompt 1 names
 ├── examples/alert-triage/app/     the finished app, to copy patterns from
 ├── app/
-│   └── app.yaml                   name: Team app, screens: []  → the placeholder page
+│   └── app.yaml                   name: Your app, screens: []  → the placeholder page
 ├── Dockerfile                     FROM the base image, COPY app/
 ├── Makefile                       dev, check, wait, smoke
-├── team.env.example               team number, code repo remote, app URL, model endpoints
+├── lab.env.example                lab user, code repo remote, app URL, model endpoints
 ├── .gitea/workflows/              build and deploy on push
 └── platform/                      read-only copy of the platform for make dev and make check
     ├── baseapp/  requirements.txt  requirements-dev.txt
@@ -57,7 +57,7 @@ app/
 
 ![Step 1: a verdict](step-1-build.png)
 
-What each line of `app.yaml` does, and how a team changes it later: [app-yaml.md](app-yaml.md).
+What each line of `app.yaml` does, and how you change it later: [app-yaml.md](app-yaml.md).
 
 ## Step 2: Ground it
 
@@ -100,7 +100,7 @@ the model are listed under the answer.
 The details come from the brief's [Step 3: Shape the answer](../../../catalog/it-alert-triage.md#step-3-shape-the-answer).
 
 Adds `hooks.py`, two blocks and the benign example. This is `examples/alert-triage/app/`, the finished app that
-ships in every team repo:
+ships in every lab user's repo:
 
 ```text
 app/

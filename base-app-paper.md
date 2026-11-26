@@ -2,16 +2,16 @@
 
 ## Summary
 
-Build one small Python platform, base-app, that every team's app runs on. Each team's code repo holds the platform plus one `app/` folder, and an agentic harness builds the team's app in that folder from a few short prompts. End users see only the finished app, under its own name and brand.
+Build one small Python platform, base-app, that every lab user's app runs on. Each lab user's code repo holds the platform plus one `app/` folder, and an agentic harness builds the user's app in that folder from a few short prompts. End users see only the finished app, under its own name and brand.
 
 - **Stack:** Python 3.12, FastAPI, Jinja2 and htmx on Red Hat's minimal Python image. There is no frontend build, and every font, script and stylesheet ships in the image, so the app never calls outside the cluster.
 - **One app per repo:** `app/app.yaml` sets the app's name, mark, brand color and screens. Each screen uses a layout filled with platform components, so most apps need no Python. This version has one layout, review.
-- **Prompts:** three prompts build the lead app: Build, Ground it, Shape the answer. Each later prompt adds one building block. Teams start from a catalog brief or their own idea.
+- **Prompts:** three prompts build the lead app: Build, Ground it, Shape the answer. Each later prompt adds one building block. Users start from a catalog brief or their own idea.
 - **Trust signals:** every app carries an Air-gap capable badge, says where its data stays and times each answer from device to model server.
 - **Models:** app pods hold no weights. They call the fast and smart open-weights model endpoints already running in dCloud, and the harness writes code with the smart tier.
-- **Builds:** each push builds the team repo's `Dockerfile`, `FROM ${BASE_IMAGE}` plus the `app/` folder, in seconds. Measured on a test VM, a pod is ready in 247 ms and idles at 35.4 MiB.
+- **Builds:** each push builds the repo's `Dockerfile`, `FROM ${BASE_IMAGE}` plus the `app/` folder, in seconds. Measured on a test VM, a pod is ready in 247 ms and idles at 35.4 MiB.
 
-Before a team's first prompt, its app shows a plain placeholder with live health checks. Every example in this paper builds one lead app, Alert Triage, chosen below. The catalog lists 27 ideas across 8 industries, the lead among them, each with its reason to run locally.
+Before a user's first prompt, their app shows a plain placeholder with live health checks. Every example in this paper builds one lead app, Alert Triage, chosen below. The catalog lists 27 ideas across 8 industries, the lead among them, each with its reason to run locally.
 
 ### Status of this version
 
@@ -21,7 +21,7 @@ Before a team's first prompt, its app shows a plain placeholder with live health
 | Text, score, table and checklist answers with citations, as schema-checked JSON | Phase 4: the other 26 catalog briefs as files, and harness provisioning on each VM |
 | Knowledge search, `hooks.py`, mock mode, `make dev`, `make check`, `make wait`, `make smoke` | Later: a speech-to-text tier |
 | Air-gap capable badge, privacy note, response route and footer on every screen | |
-| Base image, team `Dockerfile`, seeded team repo with one example (Alert Triage) and one catalog brief | |
+| Base image, app `Dockerfile`, seeded repo per lab user with one example (Alert Triage) and one catalog brief | |
 
 Sections below describe the design; anything not built yet is marked **phase 3** or **phase 4**.
 
@@ -36,7 +36,7 @@ Alert Triage leads because it shows every reason to run AI on-site at once, and 
 | Regulation | Logs carry personal data, such as usernames and email addresses, that privacy and sector rules restrict. |
 | Speed under load | An attack floods the queue just when answers matter most; a local model has no per-minute API quota and no internet round trip. |
 | Works offline | Incident response starts by isolating affected systems (CISA), and an outage can take the internet link down too; the on-site model keeps answering. |
-| Model control | The model version is pinned, so a verdict can be reproduced in an audit or an after-action review, and prompts stay in the team's own logs. |
+| Model control | The model version is pinned, so a verdict can be reproduced in an audit or an after-action review, and prompts stay in the organization's own logs. |
 
 It beat three other candidates:
 
@@ -55,7 +55,7 @@ Three tiers keep the app small: thin app pods on CPU, a shared GPU model tier, a
 
 > [Diagram: architecture — embed node/51bb9589-838d in the original doc]
 
-Users reach their team's app at its own app URL. Each pod runs the same base image and calls only the model endpoints. The harness, on each user's VM, writes code with the smart-tier model and pushes to its team's code repo, and the workflow builds and rolls out the new image.
+Each lab session belongs to one user, with their own code repo, k8s namespace, app URL and harness; nobody else's prompts change their app. Users reach their app at its own app URL. Each pod runs the same base image and calls only the model endpoints. The harness, on each user's VM, writes code with the smart-tier model and pushes to the user's code repo, and the workflow builds and rolls out the new image.
 
 ## The stack
 
@@ -71,17 +71,17 @@ Decisions inside the stack:
 
 ## The app slot: one folder per app
 
-Each team repo has one `app/` folder, and the finished app is whatever that folder describes. The harness writes the folder and the platform turns it into pages, so most apps contain no code and none of them touch the platform.
+Each lab user's repo has one `app/` folder, and the finished app is whatever that folder describes. The harness writes the folder and the platform turns it into pages, so most apps contain no code and none of them touch the platform.
 
 ```text
-team-07/                    the team's code repo
+user-7/                     the user's code repo
 ├── GUIDE.md                the lab user's step-by-step guide, with guide-images/
 ├── AGENTS.md               the rules the harness follows
-├── team.env.example        team number, code repo remote, app URL, model endpoints
+├── lab.env.example         lab user, code repo remote, app URL, model endpoints
 ├── Dockerfile              FROM ${BASE_IMAGE}, COPY app/, APP_COMMIT build arg
 ├── Makefile                dev, check, wait, smoke
 ├── .gitea/workflows/       build and deploy on push
-├── app/                    the team's app, the only folder the harness edits
+├── app/                    the user's app, the only folder the harness edits
 │   ├── app.yaml            name, mark, brand color, site, screens
 │   ├── screens/            one YAML file per screen
 │   ├── prompts/            one Markdown prompt per screen
@@ -95,7 +95,7 @@ team-07/                    the team's code repo
     └── PIN                 hash of platform/baseapp, stamped when the repo is seeded
 ```
 
-The team's `Dockerfile`, without its comments:
+The repo's `Dockerfile`, without its comments:
 
 ```dockerfile
 ARG BASE_IMAGE=base-app:latest
@@ -105,7 +105,7 @@ ENV APP_COMMIT=${APP_COMMIT}
 COPY app/ /opt/app-root/app/
 ```
 
-The cluster build passes the base image as `BASE_IMAGE` and the pushed commit as `APP_COMMIT`, which `/api/version` reports. dCloud automation builds the base image at lab start from the base-app repo's own `Containerfile`, which is not seeded; teams never build it.
+The cluster build passes the base image as `BASE_IMAGE` and the pushed commit as `APP_COMMIT`, which `/api/version` reports. dCloud automation builds the base image at lab start from the base-app repo's own `Containerfile`, which is not seeded; lab users never build it.
 
 Alert Triage, the lead example, is two short files plus its prompt and data:
 
@@ -127,7 +127,7 @@ inputs:
   - {name: alert, type: textarea, label: Paste the alert}
   - {name: logs, type: file, accept: ".log,.txt,.csv", optional: true}
   - {name: asset, type: select, options: data/assets.csv, optional: true}
-knowledge: knowledge/    # the team's runbooks
+knowledge: knowledge/    # the security team's runbooks
 output: json             # json; stream and chat are phase 3
 answer: [score, text, table, checklist]   # blocks the model's JSON fills
 examples:
@@ -171,7 +171,7 @@ The app design lives on its own canvas, base-app UI. It shows the placeholder, t
 
 | Element | Choice | Why |
 |---|---|---|
-| Brand | Each app sets its name, mark and one brand color in `app.yaml` | Every team's app looks like its own product |
+| Brand | Each app sets its name, mark and one brand color in `app.yaml` | Every user's app looks like its own product |
 | Shared parts | Header, forms, answers, tables, charts and trust signals come from the platform | Apps stay polished and consistent whatever the harness writes |
 | Type | Atkinson Hyperlegible Next, with its Mono for configs and code, vendored into the image | Designed for legibility, so it reads at a glance on a plant floor or in a store |
 | Neutrals | Mineral gray `#ECEFF3` ground, white panels, slate ink `#17202B` | Calm, so the brand color and the answer stand out |
@@ -180,12 +180,12 @@ The app design lives on its own canvas, base-app UI. It shows the placeholder, t
 
 ## Kubernetes cluster footprint and build loop
 
-One base image serves every team's app, so each node pulls the platform once and a new app adds only kilobytes. Pods are stateless; measured on a test VM, the image is ready in 247 ms and idles at 35.4 MiB, under the planned 64 MiB request. At that request, 100 app pods reserve roughly 6.25 GiB of memory and 2.5 CPU cores.
+One base image serves every lab user's app, so each node pulls the platform once and a new app adds only kilobytes. Pods are stateless; measured on a test VM, the image is ready in 247 ms and idles at 35.4 MiB, under the planned 64 MiB request. At that request, 100 app pods reserve roughly 6.25 GiB of memory and 2.5 CPU cores.
 
 ### Images
 
 - **Base image, base-app:** Red Hat's minimal Python 3.12 runtime (`ubi9/python-312-minimal`) plus the pinned dependencies, the platform, its fonts and static assets, built from the base-app repo's `Containerfile`. It uses the standard two-stage build: install the virtualenv in the full builder image, copy it into the minimal runtime. Rebuilt only when the platform changes.
-- **App image:** the team repo's `Dockerfile`, `FROM ${BASE_IMAGE}` plus `COPY app/` and the `APP_COMMIT` build arg. That layer is the size of the folder, so a rebuild takes seconds and every node already caches the rest. Each team's k8s namespace runs one Deployment of its own app image.
+- **App image:** the repo's `Dockerfile`, `FROM ${BASE_IMAGE}` plus `COPY app/` and the `APP_COMMIT` build arg. That layer is the size of the folder, so a rebuild takes seconds and every node already caches the rest. Each user's k8s namespace runs one Deployment of its own app image.
 
 | Pod setting | Default | Why |
 |---|---|---|
@@ -200,10 +200,10 @@ One base image serves every team's app, so each node pulls the platform once and
 
 1. `make dev` runs the app on the user's VM with live reload against the dCloud model endpoints, so iterating needs no container build.
 2. `make check` validates the app against a mock model (see Working with the agentic harness).
-3. `git push` sends the change to the team's code repo; the existing workflow builds the root `Dockerfile` and rolls out the team's Deployment.
-4. `make wait` polls the team's app URL until `/api/version` reports the pushed commit, then `make smoke` runs every screen's examples and prints each one's total time and model time.
+3. `git push` sends the change to the user's code repo; the existing workflow builds the root `Dockerfile` and rolls out the user's Deployment.
+4. `make wait` polls the user's app URL until `/api/version` reports the pushed commit, then `make smoke` runs every screen's examples and prints each one's total time and model time.
 
-The repo builds from a plain `Dockerfile` at its root, so the workflow needs nothing specific to base-app. If the workflow is still to be built, the lightest version is a BuildConfig per team triggered by a code repo webhook, plus an image-change trigger on the Deployment.
+The repo builds from a plain `Dockerfile` at its root, so the workflow needs nothing specific to base-app. If the workflow is still to be built, the lightest version is a BuildConfig per user triggered by a code repo webhook, plus an image-change trigger on the Deployment.
 
 Optional scale-to-zero: with Knative Serving installed, idle apps drop to zero pods and wake on the first request. Plain Deployments stay the default because they need no extra operator.
 
@@ -221,7 +221,7 @@ The models already run in dCloud, so the app needs only their OpenAI-compatible 
 - **Sharing:** the model server batches concurrent requests from every pod onto the same GPUs, so adding app pods never adds a model copy.
 - **Reasoning switch:** the smart tier reasons before answering by default. The platform turns reasoning off through its chat template for screens marked `reasoning: off` (it sends `chat_template_kwargs: {enable_thinking: false}`), so the answer arrives sooner. The serve command below sets the reasoning and tool-call parsers.
 - **Structured output:** json screens send a JSON schema built from their answer blocks as the response format. The model server constrains decoding to it, so even the fast model returns JSON that parses, and the platform checks the reply against the schema.
-- **Configuration:** seven environment variables, set once per team's k8s namespace: the model endpoints, mock mode and a default site name for the trust signals. The model IDs below are the lab's defaults.
+- **Configuration:** seven environment variables, set once per user's k8s namespace: the model endpoints, mock mode and a default site name for the trust signals. The model IDs below are the lab's defaults.
 
 ```bash
 LLM_FAST_URL=http://vllm-fast.models.svc:8000/v1
@@ -266,21 +266,21 @@ On the Kubernetes cluster, one Deployment with `replicas: 2` and `nvidia.com/gpu
 
 ## Working with the agentic harness
 
-The agentic harness gets a narrow lane: it edits only `app/`, runs the Makefile targets and pushes to its team's code repo. Small files, one obvious place to work and a fast, exact test command are what keep a 120B open model productive.
+The agentic harness gets a narrow lane: it edits only `app/`, runs the Makefile targets and pushes to the user's code repo. Small files, one obvious place to work and a fast, exact test command are what keep a 120B open model productive.
 
 **How AGENTS.md gets into the harness (provisioning: phase 4).** The harness has one home folder, called its workspace. At the start of every chat it opens the AGENTS.md in that folder and adds its text to the instructions it sends the model. It never looks for an AGENTS.md anywhere else, not even in a folder it is editing. Out of the box the workspace is a folder in the user's home where the harness writes a starter AGENTS.md of its own.
 
-So nothing is copied. Instead, the workspace becomes the user's clone of the team repo, which already holds the rules. Step by step:
+So nothing is copied. Instead, the workspace becomes a clone of the user's repo, which already holds the rules. Step by step:
 
-1. **The repo carries the rules.** Every team repo is seeded from base-app with `AGENTS.md` and `skills/base-app/SKILL.md` beside `app/`. This part is built.
-2. **Provisioning clones the repo.** Before the user signs in, the lab's VM setup installs the latest stable harness and clones the team repo, with its push credentials, to `~/team-07`.
+1. **The repo carries the rules.** Every lab user's repo is seeded from base-app with `AGENTS.md` and `skills/base-app/SKILL.md` beside `app/`. This part is built.
+2. **Provisioning clones the repo.** Before the user signs in, the lab's VM setup installs the latest stable harness and clones the user's repo, with its push credentials, to `~/user-7`.
 3. **Provisioning points the harness at the clone.** The same setup writes the harness's config file with the settings below.
-4. **Every chat reads the rules.** When the user starts a chat, the harness reads `~/team-07/AGENTS.md` into its instructions and lists the skills in `~/team-07/skills/`, opening a full SKILL.md when a task needs it. Its commands run in `~/team-07` too, so `make check` and `git push` work as written.
+4. **Every chat reads the rules.** When the user starts a chat, the harness reads `~/user-7/AGENTS.md` into its instructions and lists the skills in `~/user-7/skills/`, opening a full SKILL.md when a task needs it. Its commands run in `~/user-7` too, so `make check` and `git push` work as written.
 5. **Changes arrive with git.** To change the rules, commit a new AGENTS.md to the repo and run `git pull` on the VM. The next new chat uses it; a changed skill applies from the next message.
 
 | Harness setting | Value |
 |---|---|
-| Workspace | `~/team-07`, the clone of the team repo |
+| Workspace | `~/user-7`, the clone of the user's repo |
 | Starter files | Skipped, because the repo has its own AGENTS.md |
 | Model provider | The smart tier's OpenAI-compatible API, as the VM reaches it, with its API key |
 | Model | `nvidia/nemotron-3.5-super` (the `LLM_SMART_MODEL` default), text and image input, 114,688-token context |
@@ -299,7 +299,7 @@ The repo's AGENTS.md, kept short on purpose:
 6. No network calls and no external URLs, in code or in HTML.
 7. If no building block fits a request, say so and suggest the closest one.
 8. Run make check after every change. Do not push until it passes.
-9. Push to your team repo (see team.env), run make wait and make smoke, and report the timings.
+9. Push to your repo (see lab.env), run make wait and make smoke, and report the timings.
 
 How to build and change the app: skills/base-app/SKILL.md.
 ```
@@ -310,9 +310,9 @@ How to build and change the app: skills/base-app/SKILL.md.
 2. Write `app.yaml`, the screen, its prompt and synthetic data.
 3. Run `make check` and fix whatever it names.
 4. Run `make dev`, call an example through the API and read the answer.
-5. Commit and `git push` to the team repo, then run `make wait` and `make smoke` against the team's app URL.
+5. Commit and `git push` to the user's repo, then run `make wait` and `make smoke` against the user's app URL.
 
-Each team repo carries a `team.env` with the team number, the code repo remote and the app URL, so the harness always pushes to the right repo and tests the right URL. The app's `/api/version` reports the running commit, which is how `make wait` knows the new build is live.
+Each lab user's repo carries a `lab.env` with the lab user, the code repo remote and the app URL, so the harness always pushes to the right repo and tests the right URL. The app's `/api/version` reports the running commit, which is how `make wait` knows the new build is live.
 
 What `make check` does, in under 5 seconds with no GPU, in this order:
 
@@ -327,7 +327,7 @@ Errors name the file, the field and the fix, because that is what a model can ac
 
 ### Guardrails on the cluster
 
-- The harness needs no cluster credentials at all. Its only write access is `git push` to its own team repo; the workflow does the building and deploying.
+- The harness needs no cluster credentials at all. Its only write access is `git push` to its own repo; the workflow does the building and deploying.
 - The harness runs shell commands and edits files on its own. The per-user lab VM is the right place for it; keep real credentials off it.
 
 ## The prompt ladder
@@ -338,7 +338,7 @@ Three prompts build the lead app, Alert Triage, in the review layout, and every 
 2. **Ground it:** "Add our incident runbooks for password spray, phishing and malware, and give the analyst next steps from them, each showing the runbook section it came from."
 3. **Shape the answer:** "Add a severity score from 0 to 100 and a table of the MITRE ATT&CK techniques. Count the failed logins in the logs exactly instead of letting the AI guess. Add a harmless example too: a user who got locked out and was already reset."
 
-Prompts are what an analyst would say, not specifications. The brief's **What each prompt builds** section holds the details for each step (inputs, sample data, examples, runbook sections, severity bands), and the skill tells the harness to take whatever a prompt leaves out from the matching step. The prompts ship in every team repo, in the brief and in `GUIDE.md`; a test keeps the two identical.
+Prompts are what an analyst would say, not specifications. The brief's **What each prompt builds** section holds the details for each step (inputs, sample data, examples, runbook sections, severity bands), and the skill tells the harness to take whatever a prompt leaves out from the matching step. The prompts ship in every lab user's repo, in the brief and in `GUIDE.md`; a test keeps the two identical.
 
 After that, one prompt per feature:
 
@@ -386,7 +386,7 @@ Wording rules: the badge says Air-gap capable, meaning the app can run with no i
 
 ## Use case catalog: manufacturing, retail, healthcare
 
-Twelve ideas cover the three requested industries. Each will ship as a one-page brief in `catalog/` that a team's first prompt can name (phase 4), and two of them, Line Assist and Floor Help, become finished examples with the workspace and assistant layouts (phase 3). A review-layout sketch of Line Assist is already in `docs/gallery/`.
+Twelve ideas cover the three requested industries. Each will ship as a one-page brief in `catalog/` that a user's first prompt can name (phase 4), and two of them, Line Assist and Floor Help, become finished examples with the workspace and assistant layouts (phase 3). A review-layout sketch of Line Assist is already in `docs/gallery/`.
 
 ### Manufacturing
 
@@ -459,7 +459,7 @@ Fifteen more ideas fit the same platform unchanged. IT and network operations is
 | Deposition Summarizer | Summarizes long transcripts with page and line references | Privileged material, and long transcripts suit the smart model's long context window | smart | 1 |
 | Deal Room Q&A | Answers questions over a data room with citations to the source documents | Material non-public information: a leak can move a share price | smart | 2 |
 
-## What ships in each team repo
+## What ships in each lab user's repo
 
 Each repo starts with a placeholder app, the finished lead example and its catalog brief. The example's chips double as the platform's end-to-end tests.
 
@@ -476,7 +476,7 @@ Acceptance checks for the platform:
 
 - `make check` passes against the mock model in under 5 seconds. Met locally.
 - An idle pod stays under its 64 MiB request and starts in under 1 second. Met on a test VM: 35.4 MiB, ready in 247 ms.
-- On a fresh team namespace, the placeholder shows every health check passing.
+- On a fresh user namespace, the placeholder shows every health check passing.
 - Alert Triage's examples run end to end against the dCloud models through `make smoke`.
 - A one-line change is live within a minute of the push.
 - The harness builds Alert Triage from its catalog brief in three prompts, using only the skill and AGENTS.md.
@@ -485,7 +485,7 @@ The last four need the cluster run.
 
 ## Next steps
 
-1. Wire lab start to seed each team repo from `dist/team-repo/`, write its `team.env` and pass `BASE_IMAGE` to the build.
+1. Wire lab start to seed each lab user's repo from `dist/lab-repo/`, write its `lab.env` and pass `BASE_IMAGE` to the build.
 2. Run it on the cluster, and record real footprint and timing numbers against the acceptance checks.
 3. Build the guide page: the three prompts that build Alert Triage, then one prompt per feature.
 4. Phase 3: the workspace and assistant layouts and the blocks marked phase 3 above. Phase 4: the remaining catalog briefs and harness provisioning.

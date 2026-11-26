@@ -1,4 +1,4 @@
-# app.yaml: what the team does with it
+# app.yaml: what you do with it
 
 `app/app.yaml` is the app's identity: its name, its look, where its data stays, and which
 screens it has. It is five lines. Lab users normally never type it: they describe the app in
@@ -6,11 +6,11 @@ a prompt and the agentic harness writes the file. They can also edit it by hand;
 
 ## At lab start
 
-Every team repo starts with this file. With `screens: []` the app shows the placeholder page.
+Every lab user's repo starts with this file. With `screens: []` the app shows the placeholder page.
 
 ```yaml
 # Your app. The agentic harness fills this in from your first prompt.
-name: Team app          # shown in the header, 1 to 40 characters
+name: Your app          # shown in the header, 1 to 40 characters
 # mark: shield          # one letter, or an icon from the platform's set
 # brand: "#1D4ED8"      # hex color for the mark and header accent
 # site: HQ data center  # where data stays, shown in the trust signals
@@ -43,7 +43,7 @@ needs both. After the push the placeholder is gone and `/` opens the Triage scre
 |---|---|---|
 | `name: Alert Triage` | The app name in the header and the browser tab | The brief's title |
 | `mark: shield` | The square badge left of the name | A security app, so the shield icon. One letter works too, like `mark: T` |
-| `brand: "#1D4ED8"` | The header's top border, the mark, the Run button, the score bar | The brief, or the team's own color |
+| `brand: "#1D4ED8"` | The header's top border, the mark, the Run button, the score bar | The brief, or your own color |
 | `site: HQ data center` | "What you enter stays in HQ data center" under the inputs, "All inside HQ data center" under each answer, and the footer | "for the HQ security team" in the prompt |
 | `screens: [triage]` | The pages of the app; the first opens at `/`. With two or more, tabs appear above the screen | One screen per job in the brief |
 
@@ -67,7 +67,7 @@ Each of these prompts changes one line, and the harness runs `make check` before
 2. Run `make check`. It must end with `All checks passed.`
 3. Run `make dev` and open http://localhost:8742 to see the change, with live reload.
 4. Push: `git add app && git commit -m "Rename to SOC Triage" && git push`.
-5. Run `make wait`; when it returns, the team's Route serves the new version.
+5. Run `make wait`; when it returns, the app URL serves the new version.
 
 ## Mistakes make check catches
 
@@ -82,4 +82,4 @@ Every message names the file, the field and the fix:
 | A screen listed but not written, `screens: [triage, shift_summary]` | `app/screens/shift_summary.yaml is missing; app.yaml lists screen shift_summary, so add that file` |
 
 If a broken app.yaml is pushed anyway, the app still starts: it shows the placeholder with the
-same message in an amber box at the top, so the team sees what to fix.
+same message in an amber box at the top, so you see what to fix.

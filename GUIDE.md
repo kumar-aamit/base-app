@@ -1,26 +1,26 @@
-# Build your team's app: lab guide
+# Build your app: lab guide
 
 You build a working AI app by typing a few plain-language requests to an agentic harness. It
-writes the app, checks it, and publishes it to your team's app URL. You never edit code yourself,
+writes the app, checks it, and publishes it to your own app URL. You never edit code yourself,
 and you don't need to know how.
 
 The worked example is **Alert Triage**: a security analyst pastes an alert and its logs, and the
-app returns a severity score, a verdict, the attack techniques and next steps from the team's
-own runbooks. Every part of it runs on-site, on the lab's own models.
+app returns a severity score, a verdict, the attack techniques and next steps from the security
+team's own runbooks. Every part of it runs on-site, on the lab's own models.
 
 Values in `<angle brackets>` come from your lab page.
 
 ## Before you start
 
-- You have: your lab user (`<user N>`), your team number (`team-<N>`), and the address of the
-  harness on your VM (`<harness URL>`).
-- One person per team types the prompts; the others watch the app URL and try the examples.
+- This is your own lab session: your own repo (`user-<N>`), app URL and agent. Nobody else's
+  prompts change your app.
+- You have: your lab user (`<user N>`) and the address of the harness on your VM (`<harness URL>`).
 - Use only the made-up sample data in this repo. Never paste real alerts, logs, customer,
   patient or employee data.
 
 ## Step 0: see your app's placeholder
 
-1. Open your team's app URL, `<your app URL>`, in a browser. If you don't have it yet,
+1. Open your app URL, `<your app URL>`, in a browser. If you don't have it yet,
    do step 1 below and ask the harness: *What is my app URL?*
 2. You see **Your app will appear here** and three checks:
 
@@ -36,10 +36,10 @@ Values in `<angle brackets>` come from your lab page.
 
 ## Step 1: open the harness
 
-1. Open `<harness URL>` in your browser. It is already working in your team's repo, with the
+1. Open `<harness URL>` in your browser. It is already working in your repo, with the
    rules (`AGENTS.md`) and the how-to (`skills/base-app/SKILL.md`) loaded.
 2. Start a new chat. Check it with: *Which folder may you edit, and what is my app URL?* It
-   should answer `app/` and your team's app URL.
+   should answer `app/` and your app URL.
 
 ## Step 2: build the app (prompt 1)
 
@@ -144,6 +144,6 @@ So you can follow along in its replies:
 
 1. Writes or changes files in `app/` only.
 2. `make check`: validates the app and runs every example against a stand-in model, in seconds.
-3. `git push`: your team's repo builds a new app image and rolls it out.
+3. `git push`: your repo builds a new app image and rolls it out.
 4. `make wait`: waits until your app URL serves the new build.
 5. `make smoke`: runs every example against the real models and reports the times.
