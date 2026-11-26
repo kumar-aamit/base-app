@@ -21,7 +21,7 @@ def http_fetch(insecure: bool):
 def main(url: str | None = None, fetch=None, insecure: bool | None = None) -> int:
     url = (url or os.environ.get("APP_URL", "")).rstrip("/")
     if not url:
-        print("Set APP_URL in team.env to your app's address.")
+        print("Set APP_URL in lab.env to your app's address.")
         return 1
     if insecure is None:
         insecure = os.environ.get("INSECURE_TLS", "1") == "1"

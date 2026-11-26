@@ -8,7 +8,7 @@ BASE_APP_ONLY = {".dockerignore", "Containerfile", "base-app-paper.md", "docs", 
 
 
 def seed_list() -> set[str]:
-    script = (ROOT / "scripts" / "build-team-repo.sh").read_text()
+    script = (ROOT / "scripts" / "build-lab-repo.sh").read_text()
     return set(re.search(r"^SEED=\((.*)\)$", script, re.M).group(1).split())
 
 

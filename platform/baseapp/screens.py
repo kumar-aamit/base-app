@@ -124,6 +124,29 @@ def _block(raw, where: str) -> AnswerBlock:
     return AnswerBlock(kind=kind, key=key, title=str(opts.get("title", kind.capitalize())), columns=columns)
 
 
+def _knowledge(app_dir: Path, value: str) -> Path:
+    fix = "use a folder inside app/, like knowledge/"
+    if Path(value).is_absolute():
+        raise ScreenError(f'knowledge: "{value}" is an absolute path; {fix}')
+    if ".." in Path(value).parts:
+        raise ScreenError(f'knowledge: "{value}" uses .. to leave app/; {fix}')
+    root = app_dir.resolve()
+    folder = (app_dir / value).resolve()
+    if folder == root:
+        raise ScreenError(f'knowledge: "{value}" is app/ itself; {fix}')
+    if root not in folder.parents:
+        raise ScreenError(f"knowledge: app/{value} is a symlink to {folder}, outside app/; "
+                          f"copy the documents into a folder inside app/ instead")
+    if not folder.is_dir():
+        raise ScreenError(f"knowledge: app/{value} is missing; create the folder or remove knowledge:")
+    for path in sorted(folder.rglob("*")):
+        if root not in path.resolve().parents:
+            rel = Path(value, path.relative_to(folder)).as_posix()
+            raise ScreenError(f"knowledge: app/{rel} is a symlink to {path.resolve()}, outside app/; "
+                              f"copy the file into app/{Path(value).as_posix()}/ instead")
+    return folder
+
+
 def load_screen(app_dir: Path, name: str) -> ScreenSpec:
     app_dir = Path(app_dir)
     label = f"app/screens/{name}.yaml"
@@ -183,9 +206,10 @@ def load_screen(app_dir: Path, name: str) -> ScreenSpec:
 
     knowledge = None
     if raw.get("knowledge"):
-        knowledge = (app_dir / str(raw["knowledge"])).resolve()
-        if not knowledge.is_dir():
-            fail(f'knowledge: app/{raw["knowledge"]} is missing; create the folder or remove knowledge:')
+        try:
+            knowledge = _knowledge(app_dir, str(raw["knowledge"]))
+        except ScreenError as exc:
+            fail(str(exc))
 
     names = {i.name for i in inputs}
     examples = []

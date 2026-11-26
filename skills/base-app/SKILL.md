@@ -1,6 +1,6 @@
 ---
 name: base-app
-description: Build or change the team's app in app/. Use for every request about the app — build it, add a screen, input, answer block, knowledge, sample data or a hook — and before every push.
+description: Build or change the user's app in app/. Use for every request about the app — build it, add a screen, input, answer block, knowledge, sample data or a hook — and before every push.
 ---
 
 # base-app
@@ -11,11 +11,15 @@ Markdown, CSV and text files, plus an optional `hooks.py`. Read `AGENTS.md` firs
 ## The loop
 
 1. Read the request, the brief in `catalog/` if one is named, and `examples/alert-triage/app/`.
+   Users type short prompts in their own words. If the brief has **What each prompt builds**, match
+   the prompt to its step (usually the next one `app/` does not have yet), take every detail the
+   prompt leaves out from that step, and build only that step. Later prompts in the same chat
+   continue the same brief even when they do not name it.
 2. Write or change files in `app/`. One request changes one building block.
 3. Run `make check`. It names the file, the field and the fix; do what it says and run it again.
 4. Run `make dev` and try an example: `curl -s localhost:8742/api/screens/<screen>/run -H 'content-type: application/json' -d '{"example": 0}'`.
 5. `git add app && git commit -m "<what changed>" && git push`, then `make wait` and `make smoke`.
-6. Report the app URL from `team.env` and the timings `make smoke` printed.
+6. Report the app URL from `lab.env` and the timings `make smoke` printed.
 
 ## app/ layout
 
@@ -37,6 +41,17 @@ mark: shield           # one letter, or an icon: shield, server, wifi-off, circl
 brand: "#1D4ED8"       # hex; must be dark enough for white text (4.5:1)
 site: HQ data center   # where data stays; shown in the privacy note and footer
 screens: [triage]      # each name needs screens/<name>.yaml and prompts/<name>.md
+```
+
+## Quoting in YAML
+
+Quote any string value that contains `,` `?` `:` or `#`. Unquoted, `#` starts a comment, `: `
+starts a new field, and inside `{...}` a `,` ends the value, so the file breaks or silently loses text.
+
+```yaml
+label: "Severity: high"
+brand: "#0B6E99"
+inputs: {alert: "212 failed logins, then a success at 02:14. Spray?"}
 ```
 
 ## screens/<name>.yaml
@@ -95,6 +110,8 @@ after your prompt. Say in the prompt what each block should contain and to cite 
 Markdown files split at headings; each section is one passage, found by its heading, its text and
 its document's `# title`. Give each document one `# title` and short `##` sections. The 4 best
 passages for the inputs are sent with the prompt and listed under the answer.
+`knowledge:` must name a folder inside `app/`: an absolute path, `..`, or a symlink to anything
+outside `app/` fails `make check`. Copy the documents in instead.
 
 ## hooks.py
 

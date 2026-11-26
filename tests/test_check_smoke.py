@@ -61,6 +61,14 @@ def test_broken_yaml_reports_and_stops(tmp_path, capsys):
     assert code == 1 and "app/screens/triage.yaml" in out
 
 
+def test_knowledge_outside_app_fails(tmp_path, capsys):
+    make_app(tmp_path)
+    s = tmp_path / "screens" / "triage.yaml"
+    s.write_text(s.read_text().replace("knowledge: knowledge", "knowledge: ../knowledge"))
+    code, out = run_check(tmp_path, capsys)
+    assert code == 1 and 'FAIL  app/screens/triage.yaml: knowledge: "../knowledge' in out and "uses .. to leave app/" in out
+
+
 def test_mock_citing_a_passage_the_search_did_not_find_fails(tmp_path, capsys):
     make_app(tmp_path)
     s = tmp_path / "screens" / "triage.yaml"
@@ -94,10 +102,10 @@ def test_smoke_runs_every_example(tmp_path, capsys):
     tc = TestClient(create_app(make_app(tmp_path)))
 
     def fetch(method, url, body=None):
-        r = tc.request(method, url.replace("https://team.example", ""), json=body)
+        r = tc.request(method, url.replace("https://app.example", ""), json=body)
         return r.status_code, r.json()
 
-    code = smoke.main(url="https://team.example", fetch=fetch)
+    code = smoke.main(url="https://app.example", fetch=fetch)
     out = capsys.readouterr().out
     assert code == 0, out
     assert "triage" in out and "Spray" in out and "mock" in out

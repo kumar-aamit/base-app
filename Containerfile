@@ -1,4 +1,4 @@
-# base-app: the platform every team's app image builds FROM.
+# base-app: the platform every lab user's app image builds FROM.
 FROM registry.access.redhat.com/ubi9/python-312:latest AS builder
 USER 0
 COPY platform/requirements.txt /tmp/requirements.txt

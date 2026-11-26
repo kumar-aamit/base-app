@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Assemble dist/team-repo/: the files start-lab.sh seeds into every team repo.
-# This repo's root is laid out as a team repo; SEED lists the parts teams get. Everything
+# Assemble dist/lab-repo/: the files start-lab.sh seeds into every lab user's repo.
+# This repo's root is laid out as a lab user's repo; SEED lists the parts each user gets. Everything
 # else here (Containerfile, tests, scripts, docs, the paper) is base-app tooling.
 set -euo pipefail
 
-SEED=(AGENTS.md Dockerfile Makefile team.env.example .gitignore .gitea app catalog examples skills platform)
+SEED=(GUIDE.md guide-images AGENTS.md Dockerfile Makefile lab.env.example .gitignore .gitea app catalog examples skills platform)
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="${ROOT}/dist/team-repo"
+OUT="${ROOT}/dist/lab-repo"
 
 rm -rf "${OUT}"
 mkdir -p "${OUT}"

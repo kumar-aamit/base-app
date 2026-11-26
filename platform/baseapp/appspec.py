@@ -19,7 +19,7 @@ def available_icons() -> set[str]:
 
 @dataclass(frozen=True)
 class AppSpec:
-    name: str = "Team app"
+    name: str = "Your app"
     mark: str = ""
     brand: str = "#17202B"
     site: str | None = None

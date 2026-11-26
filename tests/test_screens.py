@@ -75,6 +75,60 @@ def test_example_input_must_exist(tmp_path):
         load_screen(app_dir(tmp_path, text), "triage")
 
 
+def confined(tmp_path, value):
+    d = tmp_path / "app"
+    d.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "secret.md").write_text("# Secret\n\nnot part of the app\n")
+    return app_dir(d, TRIAGE.replace("knowledge: knowledge/", f"knowledge: {value}")), outside
+
+
+def test_knowledge_absolute_path_rejected(tmp_path):
+    d, outside = confined(tmp_path, "/etc")
+    with pytest.raises(ScreenError, match=r'app/screens/triage.yaml: knowledge: "/etc" is an absolute path; '
+                                          r'use a folder inside app/, like knowledge/'):
+        load_screen(d, "triage")
+
+
+def test_knowledge_dotdot_escape_rejected(tmp_path):
+    d, outside = confined(tmp_path, "knowledge/../../outside")
+    with pytest.raises(ScreenError, match=r'app/screens/triage.yaml: knowledge: "knowledge/../../outside" uses \.\. '
+                                          r'to leave app/; use a folder inside app/, like knowledge/'):
+        load_screen(d, "triage")
+
+
+def test_knowledge_app_root_rejected(tmp_path):
+    d, outside = confined(tmp_path, "./")
+    with pytest.raises(ScreenError, match=r'knowledge: "\./" is app/ itself; use a folder inside app/'):
+        load_screen(d, "triage")
+
+
+def test_knowledge_folder_symlinked_outside_rejected(tmp_path):
+    d, outside = confined(tmp_path, "runbooks/")
+    (d / "runbooks").symlink_to(outside, target_is_directory=True)
+    with pytest.raises(ScreenError, match=r"app/screens/triage.yaml: knowledge: app/runbooks/ is a symlink to "
+                                          r".*outside, outside app/; copy the documents into a folder inside app/"):
+        load_screen(d, "triage")
+
+
+def test_knowledge_file_symlinked_outside_rejected(tmp_path):
+    d, outside = confined(tmp_path, "knowledge/")
+    (d / "knowledge" / "secret.md").symlink_to(outside / "secret.md")
+    with pytest.raises(ScreenError, match=r"app/screens/triage.yaml: knowledge: app/knowledge/secret.md is a symlink "
+                                          r"to .*secret.md, outside app/; copy the file into app/knowledge/ instead"):
+        load_screen(d, "triage")
+
+
+def test_knowledge_folder_inside_app_allowed_even_through_a_symlink(tmp_path):
+    d, outside = confined(tmp_path, "docs/runbooks")
+    (d / "knowledge" / "spray.md").write_text("# Password spray\n\n## Contain\n\nBlock the address.\n")
+    (d / "docs").mkdir()
+    (d / "docs" / "runbooks").symlink_to(d / "knowledge", target_is_directory=True)
+    s = load_screen(d, "triage")
+    assert s.knowledge == (d / "knowledge").resolve()
+
+
 def test_duplicate_block_keys_rejected(tmp_path):
     text = TRIAGE.replace("  - checklist: {title: Next steps}", "  - text: {title: Timeline}")
     with pytest.raises(ScreenError, match=r'answer\[3\]: key "text" is used twice; add key: to one of them'):

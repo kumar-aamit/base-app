@@ -1,4 +1,4 @@
-"""Wait until the team's Route serves a given commit: python -m baseapp.wait"""
+"""Wait until the app URL serves a given commit: python -m baseapp.wait"""
 import json
 import os
 import ssl
@@ -43,7 +43,7 @@ def wait_for_commit(
 def main() -> int:
     url = os.environ.get("APP_URL", "").strip()
     if not url:
-        print("APP_URL is not set; add it to team.env", file=sys.stderr)
+        print("APP_URL is not set; add it to lab.env", file=sys.stderr)
         return 2
     commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
     insecure = os.environ.get("INSECURE_TLS", "1") == "1"

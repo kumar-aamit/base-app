@@ -1,32 +1,42 @@
 # base-app: decisions and file tree
 
-Where the base-app platform and the team repo stand as of 2026-11-25 (branch `phase-2`,
-commit `477b3fd`). The design paper is `base-app-paper.md`; where this file and the paper differ,
+Where the base-app platform and each lab user's repo stand as of 2026-11-26 (branch `final`, created
+from tag `phase-2`). The design paper is `base-app-paper.md`; where this file and the paper differ,
 this file describes what is built.
 
 ## Decisions
+
+### Locked
+
+These are settled; reopen them only with the lab owner.
+
+| Decision | Detail |
+|---|---|
+| Lead app | Alert Triage in the review layout, built in three prompts: Build, Ground it, Shape the answer. Event desk stays in the catalog only. |
+| Kit scope | The review layout only. Workspace, assistant, streaming and chat stay in phase 3. |
+| Generic terms in user-facing copy | Agentic harness (then "the harness"), code repo, Kubernetes cluster, k8s namespace, open-weights model (fast tier / smart tier), OpenAI-compatible API, app URL. Cisco AI Pod and dCloud keep their names. File names, env vars, model IDs, scripts, Make targets and workflow internals keep theirs. |
 
 ### Lab shape
 
 | Decision | Detail |
 |---|---|
-| One platform, one folder per team | Every team repo is the platform plus one `app/` folder. OpenClaw edits only `app/`. |
+| One platform, one folder per user | Every lab user's repo is the platform plus one `app/` folder. The agentic harness edits only `app/`. |
 | Lead use case | Alert Triage (IT security), built in the Review layout in three prompts: Build, Ground it, Shape the answer. |
-| Team repo name | `team-<N>`, from the lab user number (`user7` → `team-7`), as `start-lab.sh` already derives it. |
-| Base image build | dCloud automation builds and deploys the base image at lab start. Teams never build it. |
-| Team image | The team's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and an `APP_COMMIT` build arg. |
-| Seeding | `scripts/build-team-repo.sh` writes `dist/team-repo/`; `start-lab.sh` commits it into each team repo through the Gitea Contents API (`TEAM_APP_DIR`). The `start-lab.sh` wiring is still to do. |
+| Repo name | One repo per lab user, `user-<N>` from the lab user number (`user7` → `user-7`). The lab is single-user sessions: each user has their own repo, k8s namespace, app URL and harness. `start-lab.sh` derives the name today as `team-<N>`; rename it there. |
+| Base image build | dCloud automation builds and deploys the base image at lab start. Lab users never build it. |
+| App image | The repo's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and an `APP_COMMIT` build arg. |
+| Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/`; `start-lab.sh` commits it into each user's code repo through the repo server's Contents API (`LAB_APP_DIR`). The `start-lab.sh` wiring is still to do. |
 
 ### Repo layout
 
 | Decision | Detail |
 |---|---|
-| The repo root is laid out as a team repo | What you open is what a team gets, plus base-app tooling beside it. |
+| The repo root is laid out as a lab user's repo | What you open is what each lab user gets, plus base-app tooling beside it. |
 | `platform/baseapp/` is the source | Not a generated copy. The package is `baseapp`, not `platform`, which would shadow the standard library. |
-| Seed by explicit list | `SEED` in `build-team-repo.sh`: AGENTS.md, Dockerfile, Makefile, team.env.example, .gitignore, .gitea, app, catalog, examples, skills, platform. |
+| Seed by explicit list | `SEED` in `build-lab-repo.sh`: GUIDE.md, guide-images, AGENTS.md, Dockerfile, Makefile, lab.env.example, .gitignore, .gitea, app, catalog, examples, skills, platform. |
 | Base-app only | Containerfile, .dockerignore, tests, scripts, docs, base-app-paper.md, pyproject.toml, requirements-test.txt. `tests/test_seed.py` fails if a new top-level path is in neither list. |
-| `platform/PIN` | A hash of `platform/baseapp`, written only into the seeded copy. `make check` in a team repo fails if `platform/` was edited; in this repo it skips the comparison. |
-| Working copy | `/Users/amitkumar/PycharmProjects/hackathon-v2`. The older copy under `Documents/demo-guide/base-app` is stale. No git remote yet. |
+| `platform/PIN` | A hash of `platform/baseapp`, written only into the seeded copy. `make check` in a lab user's repo fails if `platform/` was edited; in this repo it skips the comparison. |
+| Working copy | `/Users/amitkumar/PycharmProjects/hackathon-v2`. The older copy under `Documents/demo-guide/base-app` is stale. Remote `origin` is the public GitHub repo `kumar-aamit/base-app` (`main`, tags `phase-1` and `phase-2`); `final` is local only. |
 
 ### Stack and runtime
 
@@ -44,18 +54,18 @@ this file describes what is built.
 
 | Decision | Detail |
 |---|---|
-| Two tiers, both run | fast: Llama 3.1 8B. smart: `nvidia/nemotron-3.5-super`. Set with `LLM_FAST_URL`, `LLM_FAST_MODEL`, `LLM_SMART_URL`, `LLM_SMART_MODEL`, `LLM_API_KEY`. The fast URL is not supplied yet. |
+| Two tiers, both run | Open-weights models behind an OpenAI-compatible API. fast tier: an 8B instruct model. smart tier: a 120B mixture of experts, default ID `nvidia/nemotron-3.5-super`. Set with `LLM_FAST_URL`, `LLM_FAST_MODEL`, `LLM_SMART_URL`, `LLM_SMART_MODEL`, `LLM_API_KEY`. The fast URL is not supplied yet. |
 | Client | Plain httpx to the OpenAI-compatible `/chat/completions`; no SDK. Temperature 0.2, max 4096 tokens, 120 s timeout. |
 | Structured answers | Each screen's answer blocks become a JSON schema sent as `response_format`; the reply is checked against it. |
 | Reasoning switch | `reasoning: off` sends `chat_template_kwargs: {enable_thinking: false}`. |
 | Mock mode | `LLM_MOCK=1`: no model is called; each example's `mock:` answer is returned, or a placeholder built from the blocks. The placeholder page shows model checks as grey "skipped: mock mode", not green. |
 
-### What a team writes in app/
+### What a user writes in app/
 
 | Decision | Detail |
 |---|---|
 | Fixed files | `app.yaml`; `screens/<name>.yaml` and `prompts/<name>.md` for every name in `screens:`. |
-| Optional | `knowledge/` (any folder a screen names), `data/` (convention; required only by `ctx.data` and `ctx.text`), `hooks.py`. |
+| Optional | `knowledge/` (any folder inside `app/` a screen names; absolute paths, `..` and symlinks to anything outside `app/` are rejected), `data/` (convention; required only by `ctx.data` and `ctx.text`), `hooks.py`. |
 | app.yaml fields | `name` (1 to 40 characters), `mark` (one letter or a vendored icon), `brand` (hex, at least 4.5:1 against white), `site`, `screens`. |
 | Layouts | Only `review` in this platform version. `workspace` and `assistant` are rejected with a message saying so (phase 3). |
 | Inputs | text, textarea, select (a list or the first column of a CSV), number, toggle, file (.txt .log .csv .md .json .pdf become text, up to 2 MB). |
@@ -71,8 +81,8 @@ this file describes what is built.
 | Command | What it does |
 |---|---|
 | `make dev` | Runs the app on port 8742 with live reload of `app/`. |
-| `make check` | Under 5 s, no GPU: platform PIN; external URLs; stdlib-only hook imports; app.yaml and every screen; brand contrast; every screen renders; every example runs end to end against the mock and renders; mock citations exist. |
-| `make wait` | Waits until the team's Route serves the pushed commit. |
+| `make check` | Under 5 s, no GPU: platform PIN; external URLs; stdlib-only hook imports; app.yaml and every screen, with `knowledge:` confined to `app/`; brand contrast; every screen renders; every example runs end to end against the mock and renders; mock citations exist. |
+| `make wait` | Waits until the user's app URL serves the pushed commit. |
 | `make smoke` | Runs every example against the deployed app and real models and prints timings. |
 
 ### Trust signals
@@ -86,25 +96,30 @@ this file describes what is built.
 
 ## Open items
 
-- Wire `start-lab.sh` to seed `dist/team-repo/` (`TEAM_APP_DIR`), write each team's `team.env`, and pass `BASE_IMAGE` to the BuildConfig (phase 1 Task 7); then the on-cluster acceptance run (Task 8).
-- Create a git remote for this repo so the lab-start machine can fetch it.
+- Wire `start-lab.sh` to seed `dist/lab-repo/`, write each user's `lab.env`, and pass `BASE_IMAGE` to the BuildConfig (phase 1 Task 7); then the on-cluster acceptance run (Task 8). In `start-lab.sh`, rename `TEAM_APP_DIR` to `LAB_APP_DIR`, `team-<N>` to `user-<N>` and `team.env` to `lab.env` to match base-app.
+- Decide whether the lab-start machine fetches the public GitHub repo or a copy on the lab's code repo server.
 - Run the examples against the real models; every screenshot so far is mock mode.
-- Confine `knowledge:` to folders inside `app/`, like the other paths.
-- Add to the skill: quote YAML values that contain `, ? : #`.
-- Update the paper: the team repo has a `Dockerfile` (not `Containerfile`), and only the review layout exists yet.
-- Phase 3: workspace and assistant layouts, streaming, follow-up chat, charts, image input. Phase 4: the other 26 catalog briefs and OpenClaw provisioning.
+- Phase 3: workspace and assistant layouts, streaming, follow-up chat, charts, image input. Phase 4: the other 26 catalog briefs and harness provisioning.
 - A whole-branch code review has not been done.
+
+Done on `final`:
+
+- [x] Confine `knowledge:` to folders inside `app/`: absolute paths, `..` and symlinks out of `app/` fail at load time and in `make check`.
+- [x] Add to the skill: quote YAML values that contain `, ? : #`. (`AGENTS.md` has no YAML section, so the rule is only in the skill.)
+- [x] Update the paper: the repo's `Dockerfile`, review layout only, Alert Triage in three prompts, generic terms, and unbuilt features marked phase 3 or phase 4.
+- [x] Create a git remote: `origin` on GitHub.
+- [x] Single-user lab sessions: no "team" for the lab user anywhere. `lab.env` (`LAB_USER`), `build-lab-repo.sh`, `dist/lab-repo/`, repos named `user-<N>`, and the default app name "Your app".
 
 ## File tree
 
-Tracked files on `phase-2`. Vendored assets, plans and screenshots are collapsed (`…`), and so are the
+Tracked files on `final`. Vendored assets, plans and screenshots are collapsed (`…`), and so are the
 gallery apps and walkthrough steps, which have the same shape as `examples/alert-triage/app/`.
-Paths marked **seeded** are what `build-team-repo.sh` copies into every team repo.
+Paths marked **seeded** are what `build-lab-repo.sh` copies into every lab user's repo.
 
 ```text
 hackathon-v2/
 ├── .gitea/workflows/build-deploy-openshift.yml   seeded: build and deploy on push
-├── app/                                          seeded: THE team's app; starts as the placeholder
+├── app/                                          seeded: THE user's app; starts as the placeholder
 │   └── app.yaml
 ├── catalog/                                      seeded: briefs a first prompt can name
 │   └── it-alert-triage.md
@@ -122,6 +137,7 @@ hackathon-v2/
 │   │   ├── *.png
 │   │   └── README.md
 │   ├── screenshots/…                             phase 1 placeholder screenshots
+│   │   └── final/                                alert-triage-final.png, placeholder.png
 │   ├── superpowers/…                             roadmap and phase plans
 │   └── walkthrough/alert-triage/                 app/ after each of the three prompts
 │       ├── step-1-build/app/…
@@ -145,7 +161,7 @@ hackathon-v2/
 │       │   └── triage.yaml
 │       ├── app.yaml
 │       └── hooks.py
-├── platform/                                     seeded (+ PIN); read-only for teams
+├── platform/                                     seeded (+ PIN); read-only for users
 │   ├── baseapp/                                  the platform source
 │   │   ├── static/
 │   │   │   ├── css/base.css
@@ -180,12 +196,12 @@ hackathon-v2/
 │   ├── requirements-dev.txt
 │   └── requirements.txt
 ├── scripts/                                      base-app only
-│   ├── build-team-repo.sh                        writes dist/team-repo/
+│   ├── build-lab-repo.sh                         writes dist/lab-repo/
 │   ├── vendor-assets.sh                          refreshes platform/baseapp/static/vendor/
-│   └── verify-image.sh                           OpenShift-style run: ready < 1 s, idle < 64 MiB
-├── skills/                                       seeded: the OpenClaw skill
+│   └── verify-image.sh                           restricted-pod run: ready < 1 s, idle < 64 MiB
+├── skills/                                       seeded: the harness skill
 │   └── base-app/SKILL.md
-├── tests/                                        base-app only; 88 tests
+├── tests/                                        base-app only; 95 tests
 │   ├── test_appspec.py
 │   ├── test_check_smoke.py
 │   ├── test_config.py
@@ -200,12 +216,14 @@ hackathon-v2/
 │   └── test_walkthrough.py
 ├── .dockerignore                                 base-app only
 ├── .gitignore                                    seeded
-├── AGENTS.md                                     seeded: the 9 rules OpenClaw follows
+├── AGENTS.md                                     seeded: the 9 rules the harness follows
+├── GUIDE.md                                      seeded: the lab user's step-by-step guide
+├── guide-images/                                 seeded: the step screenshots GUIDE.md shows
 ├── base-app-paper.md                             base-app only: the design paper
 ├── Containerfile                                 base-app only: the base image
-├── Dockerfile                                    seeded: the team image
+├── Dockerfile                                    seeded: the app image
 ├── Makefile                                      seeded: dev, check, wait, smoke
 ├── pyproject.toml                                base-app only: pytest settings
 ├── requirements-test.txt                         base-app only
-└── team.env.example                              seeded
+└── lab.env.example                               seeded
 ```
