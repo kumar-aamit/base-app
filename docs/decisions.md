@@ -121,7 +121,7 @@ These are settled; reopen them only with the lab owner.
 
 ## Open items
 
-- Wire `start-lab.sh` to seed `dist/lab-repo/`, write each user's `lab.env`, and pass `BASE_IMAGE` to the BuildConfig (phase 1 Task 7); then the on-cluster acceptance run (Task 8). In `start-lab.sh`, rename `TEAM_APP_DIR` to `LAB_APP_DIR`, `team-<N>` to `user-<N>` and `team.env` to `lab.env` to match base-app, and set `LAB_USER` on each Deployment.
+- Wire `start-lab.sh` to seed `dist/lab-repo/`, write each user's `lab.env`, and pass `BASE_IMAGE` to the BuildConfig (phase 1 Task 7); then the on-cluster acceptance run (Task 8). In `start-lab.sh`, rename `TEAM_APP_DIR` to `LAB_APP_DIR`, `team-<N>` to `user-<N>` and `team.env` to `lab.env` to match base-app, and set `LAB_USER` on each Deployment. Found on the first manual run (`team-1`): build `base-app` once per namespace from the `Containerfile` with `resources.limits` set (the `project-resources` quota rejects build pods without them), and create each user's BuildConfig with `dockerStrategy.from: ImageStreamTag base-app:latest`; without it the `Dockerfile`'s `FROM base-app:latest` is looked up on public registries and fails.
 - Decide whether the lab-start machine fetches the public GitHub repo or a copy on the lab's code repo server.
 - Run the examples against the real models; every screenshot so far is mock mode.
 - Phase 3: workspace and assistant layouts, streaming, follow-up chat, charts, image input. Phase 4: the other 26 catalog briefs and harness provisioning.
