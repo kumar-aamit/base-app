@@ -47,7 +47,8 @@ These are settled; reopen them only with the lab owner.
 | Lead use case | Alert Triage (IT security), built in the Review layout in three prompts: Build, Ground it, Shape the answer. |
 | Repo name | One repo per lab user, `user-<N>` from the lab user number (`user7` → `user-7`). The lab is single-user sessions: each user has their own repo, k8s namespace, app URL and harness. `start-lab.sh` derives the name today as `team-<N>`; rename it there. |
 | Base image build | dCloud automation builds the base image once per lab from `platform/Containerfile` in a clone of `openclaw-lab-starter`, the same clone it seeds every user's repo from, so the image and the seeded `platform/` always match. The lab needs only the starter repo; base-app is where the platform is developed. Lab users never build it. |
-| App image | The repo's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and an `APP_COMMIT` build arg. |
+| App image | The repo's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and `APP_COMMIT`. On the cluster the workflow sets `APP_COMMIT` as a BuildConfig env var before each build: binary builds (`--from-dir`) ignore `--build-arg`, which left every build reporting `dev` and `make wait` timing out. |
+| Static file links | Templates link static files through `static_url()`, which adds `?v=` and the first 10 hex digits of the static folder's hash. A platform update changes the URL, so a browser that had the old page open can't keep the old stylesheet (seen on the v1 to v2 update: v2 tiles laid out with v1 CSS). |
 | Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/` and `scripts/publish-lab-repo.sh` pushes it from a clean `main` to the GitHub repo `kumar-aamit/openclaw-lab-starter`, one commit per base-app commit. `start-lab.sh` commits a clone of that repo (`LAB_STARTER_DIR`) into each user's code repo through the repo server's Contents API. The starter is generated: never commit to it directly. |
 
 ### Repo layout

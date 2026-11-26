@@ -50,6 +50,14 @@ def test_checks_json_and_fragment(tmp_path):
     assert frag.count("check-skip") == 2 and frag.count("check-ok") == 1
 
 
+def test_static_links_carry_a_fingerprint_of_the_static_files(tmp_path):
+    c = client(tmp_path)
+    links = re.findall(r'(?:href|src)="(/static/[^"]+)"', c.get("/").text)
+    assert links and all(re.search(r"\?v=[0-9a-f]{10}$", link) for link in links)
+    assert len({link.split("?v=")[1] for link in links}) == 1
+    assert all(c.get(link).status_code == 200 for link in links)
+
+
 def test_page_declares_inline_favicon(tmp_path):
     assert '<link rel="icon" href="data:,">' in client(tmp_path).get("/").text
 
