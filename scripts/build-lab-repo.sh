@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Assemble dist/lab-repo/: the files start-lab.sh seeds into every lab user's repo.
 # This repo's root is laid out as a lab user's repo; SEED lists the parts each user gets. Everything
-# else here (Containerfile, tests, scripts, docs, the paper) is base-app tooling.
+# else here (tests, scripts, docs, the paper) is base-app tooling. platform/Containerfile is seeded, so
+# the lab builds the base image from the same files it seeds.
 set -euo pipefail
 
 SEED=(GUIDE.md guide-images AGENTS.md Dockerfile Makefile lab.env.example .gitignore .gitea app catalog examples skills platform)

@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-BASE_APP_ONLY = {".dockerignore", "Containerfile", "base-app-paper.md", "docs", "pyproject.toml",
+BASE_APP_ONLY = {".dockerignore", "base-app-paper.md", "docs", "pyproject.toml",
                  "requirements-test.txt", "scripts", "tests"}
 
 

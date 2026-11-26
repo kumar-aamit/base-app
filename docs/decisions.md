@@ -46,9 +46,9 @@ These are settled; reopen them only with the lab owner.
 | One platform, one folder per user | Every lab user's repo is the platform plus one `app/` folder. The agentic harness edits only `app/`. |
 | Lead use case | Alert Triage (IT security), built in the Review layout in three prompts: Build, Ground it, Shape the answer. |
 | Repo name | One repo per lab user, `user-<N>` from the lab user number (`user7` → `user-7`). The lab is single-user sessions: each user has their own repo, k8s namespace, app URL and harness. `start-lab.sh` derives the name today as `team-<N>`; rename it there. |
-| Base image build | dCloud automation builds and deploys the base image at lab start. Lab users never build it. |
+| Base image build | dCloud automation builds the base image once per lab from `platform/Containerfile` in a clone of `openclaw-lab-starter`, the same clone it seeds every user's repo from, so the image and the seeded `platform/` always match. The lab needs only the starter repo; base-app is where the platform is developed. Lab users never build it. |
 | App image | The repo's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and an `APP_COMMIT` build arg. |
-| Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/`; `start-lab.sh` commits it into each user's code repo through the repo server's Contents API (`LAB_APP_DIR`). The `start-lab.sh` wiring is still to do. |
+| Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/` and `scripts/publish-lab-repo.sh` pushes it from a clean `main` to the GitHub repo `kumar-aamit/openclaw-lab-starter`, one commit per base-app commit. `start-lab.sh` commits a clone of that repo (`LAB_STARTER_DIR`) into each user's code repo through the repo server's Contents API. The starter is generated: never commit to it directly. |
 
 ### Repo layout
 
@@ -57,7 +57,7 @@ These are settled; reopen them only with the lab owner.
 | The repo root is laid out as a lab user's repo | What you open is what each lab user gets, plus base-app tooling beside it. |
 | `platform/baseapp/` is the source | Not a generated copy. The package is `baseapp`, not `platform`, which would shadow the standard library. |
 | Seed by explicit list | `SEED` in `build-lab-repo.sh`: GUIDE.md, guide-images, AGENTS.md, Dockerfile, Makefile, lab.env.example, .gitignore, .gitea, app, catalog, examples, skills, platform. |
-| Base-app only | Containerfile, .dockerignore, tests, scripts, docs, base-app-paper.md, pyproject.toml, requirements-test.txt. `tests/test_seed.py` fails if a new top-level path is in neither list. |
+| Base-app only | .dockerignore, tests, scripts, docs, base-app-paper.md, pyproject.toml, requirements-test.txt. `tests/test_seed.py` fails if a new top-level path is in neither list. |
 | `platform/PIN` | A hash of `platform/baseapp`, written only into the seeded copy. `make check` in a lab user's repo fails if `platform/` was edited; in this repo it skips the comparison. |
 | Working copy | `/Users/amitkumar/PycharmProjects/hackathon-v2`. The older copy under `Documents/demo-guide/base-app` is stale. Remote `origin` is the public GitHub repo `kumar-aamit/base-app` (`main`, tags `phase-1` and `phase-2`); `final` is pushed too. |
 
@@ -70,7 +70,7 @@ These are settled; reopen them only with the lab owner.
 | Nothing from the internet | htmx 2.0.11, Atkinson Hyperlegible Next and Mono 5.3.0 and lucide-static 1.79.0 icons are vendored. FastAPI's `/docs` and `/redoc` are off. `make check` rejects external URLs in `app/`. |
 | Port and health | Port 8742. `/health` and `/healthz` both answer `{"status": "ok"}`. `/api/version` reports the running commit for `make wait`. |
 | Base image | Two stages, ubi9 python-312 into python-312-minimal; runs as any UID in group 0 with a read-only root and `/tmp` as emptyDir. Measured: ready in 247 ms, idle at 35.4 MiB. |
-| Pod sizing (planned) | Requests 25m CPU / 64Mi, limits 500m / 256Mi, set in the Deployment template with Task 7. |
+| Pod sizing | Requests 25m CPU / 64Mi, limits 500m / 256Mi, set in the Deployment template. |
 | Stateless | No database. Knowledge is indexed in memory at startup. |
 | Start page | `/` shows it until `app.yaml` lists a screen; `/start` always does, linked from every footer. Ten use cases from `platform/baseapp/usecases.yaml` (in the base image, since `catalog/` is not in the app image); Alert Triage's three prompts must match its brief word for word. Steps tick from what the app has: a screen, then `knowledge:` and a checklist, then a score and a table. It polls `/api/version` and reloads on a new build. No harness progress and no model call: the app cannot see the harness. |
 | Lab user label | `LAB_USER` in the Deployment's environment shows `· user-7` beside the app name; unset, nothing shows. |
@@ -121,7 +121,8 @@ These are settled; reopen them only with the lab owner.
 
 ## Open items
 
-- Wire `start-lab.sh` to seed `dist/lab-repo/`, write each user's `lab.env`, and pass `BASE_IMAGE` to the BuildConfig (phase 1 Task 7); then the on-cluster acceptance run (Task 8). In `start-lab.sh`, rename `TEAM_APP_DIR` to `LAB_APP_DIR`, `team-<N>` to `user-<N>` and `team.env` to `lab.env` to match base-app, and set `LAB_USER` on each Deployment.
+- On-cluster acceptance run (phase 1 Task 8). Still to rename in the automation: `team-<N>` to `user-<N>` and `team.env` to `lab.env`. Found on the first manual run (`team-1`): the `project-resources` quota rejects build pods without `resources.limits`, and a BuildConfig without `dockerStrategy.from` looks up the `Dockerfile`'s `FROM base-app:latest` on public registries and fails.
+- Done in openclaw-demo `a656f65` (phase 1 Task 7, changed from per-namespace to shared): bootstrap builds `base-app:latest` once per lab in `BASE_APP_NAMESPACE` (default `base-app`) with limits set, only when the tag is missing or `BASE_APP_REBUILD=1`, and grants each user namespace `system:image-puller`. Each user's BuildConfig sets `dockerStrategy.from` to that tag. The Deployment drops the PVC and old app env, sets the `LLM_*` tiers, `LAB_USER` and `SITE_NAME`, and probes `/healthz`. Since `b3150e9` the lab needs only an `openclaw-lab-starter` clone: the base image builds from its `platform/Containerfile` and `start-lab.sh` seeds from it, so the lab machine needs neither base-app nor Python.
 - Decide whether the lab-start machine fetches the public GitHub repo or a copy on the lab's code repo server.
 - Run the examples against the real models; every screenshot so far is mock mode.
 - Phase 3: workspace and assistant layouts, streaming, follow-up chat, charts, image input. Phase 4: the other 26 catalog briefs and harness provisioning.
@@ -145,10 +146,11 @@ Paths marked **seeded** are what `build-lab-repo.sh` copies into every lab user'
 ```text
 hackathon-v2/
 ├── .gitea/workflows/build-deploy-openshift.yml   seeded: build and deploy on push
-├── app/                                          seeded: THE user's app; starts empty (the start page)
+├── app/                                          seeded: THE user's app; starts empty (the System status page)
 │   └── app.yaml
 ├── catalog/                                      seeded: briefs a first prompt can name
-│   └── it-alert-triage.md
+│   ├── it-alert-triage.md
+│   └── netconf-guard.md
 ├── docs/                                         base-app only
 │   ├── decisions.md                              this file
 │   ├── gallery/                                  one app per industry, mock screenshots
@@ -162,8 +164,8 @@ hackathon-v2/
 │   │   ├── shrink-analyst/app/…
 │   │   ├── *.png
 │   │   └── README.md
-│   ├── screenshots/…                             phase 1 placeholder screenshots
-│   │   └── final/                                alert-triage-final.png, start-page*.png
+│   ├── screenshots/…                             phase 1 placeholder screenshots, netconf-guard-v4.png
+│   │   └── final/                                alert-triage-final.png, start-page*.png (v1)
 │   ├── superpowers/…                             roadmap and phase plans
 │   └── walkthrough/alert-triage/                 app/ after each of the three prompts
 │       ├── step-1-build/app/…
@@ -172,6 +174,7 @@ hackathon-v2/
 │       ├── app-yaml.md
 │       └── README.md
 ├── examples/                                     seeded: finished apps to copy patterns from
+│   ├── netconf-guard/app/                        network config review against a hardening standard
 │   └── alert-triage/app/                         = step 3 of the walkthrough
 │       ├── data/
 │       │   ├── assets.csv
@@ -191,18 +194,21 @@ hackathon-v2/
 │   ├── baseapp/                                  the platform source
 │   │   ├── static/
 │   │   │   ├── css/base.css
-│   │   │   ├── js/review.js, js/start.js
+│   │   │   ├── js/review.js
 │   │   │   └── vendor/…                          htmx, fonts, icons
 │   │   ├── templates/
 │   │   │   ├── layouts/review.html
 │   │   │   ├── partials/
 │   │   │   │   ├── answer.html
+│   │   │   │   ├── ask.html                      status page: ask a model
 │   │   │   │   ├── checks.html
+│   │   │   │   ├── chips.html                    per-screen status chips
 │   │   │   │   ├── input.html
+│   │   │   │   ├── load.html                     status page: 10 requests at once
 │   │   │   │   ├── run_error.html
-│   │   │   │   └── status.html                   the start page's check strip
+│   │   │   │   └── tiles.html                    status page tiles
 │   │   │   ├── base.html
-│   │   │   └── start.html
+│   │   │   └── status.html                       the System status page
 │   │   ├── __init__.py
 │   │   ├── __main__.py                           python -m baseapp: uvicorn on APP_PORT
 │   │   ├── appspec.py                            app.yaml
@@ -219,18 +225,19 @@ hackathon-v2/
 │   │   ├── runner.py                             one run: inputs → hooks → search → prompt → model
 │   │   ├── screens.py                            screen files
 │   │   ├── smoke.py                              make smoke
-│   │   ├── start.py                              start page: use cases, steps done, preview
-│   │   ├── usecases.yaml                         the ten use cases and their prompts
+│   │   ├── status.py                             System status page: tiles, ask, load test
 │   │   └── wait.py                               make wait
+│   ├── Containerfile                             the base image: podman build -f platform/Containerfile .
 │   ├── requirements-dev.txt
 │   └── requirements.txt
 ├── scripts/                                      base-app only
 │   ├── build-lab-repo.sh                         writes dist/lab-repo/
+│   ├── publish-lab-repo.sh                       pushes dist/lab-repo/ to openclaw-lab-starter
 │   ├── vendor-assets.sh                          refreshes platform/baseapp/static/vendor/
 │   └── verify-image.sh                           restricted-pod run: ready < 1 s, idle < 64 MiB
 ├── skills/                                       seeded: the harness skill
 │   └── base-app/SKILL.md
-├── tests/                                        base-app only; 109 tests
+├── tests/                                        base-app only; 111 tests
 │   ├── test_appspec.py
 │   ├── test_check_smoke.py
 │   ├── test_config.py
@@ -241,7 +248,7 @@ hackathon-v2/
 │   ├── test_review_web.py
 │   ├── test_screens.py
 │   ├── test_seed.py
-│   ├── test_start.py
+│   ├── test_status.py
 │   ├── test_wait.py
 │   └── test_walkthrough.py
 ├── .dockerignore                                 base-app only
@@ -250,7 +257,6 @@ hackathon-v2/
 ├── GUIDE.md                                      seeded: the lab user's step-by-step guide
 ├── guide-images/                                 seeded: the step screenshots GUIDE.md shows
 ├── base-app-paper.md                             base-app only: the design paper
-├── Containerfile                                 base-app only: the base image
 ├── Dockerfile                                    seeded: the app image
 ├── Makefile                                      seeded: dev, check, wait, smoke
 ├── pyproject.toml                                base-app only: pytest settings
