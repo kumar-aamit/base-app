@@ -335,7 +335,9 @@ Three prompts build the lead app, Alert Triage, in the review layout, and every 
 
 1. **Build:** "Build the Alert Triage app from catalog/it-alert-triage.md for the HQ security team." The harness writes `app.yaml`, the triage screen, its prompt and synthetic data, then checks, pushes and reports the app's URL. A team's own idea works the same way, as long as it fits the review layout.
 2. **Ground it:** "Add our three runbooks to the knowledge folder and cite the step behind each action."
-3. **Shape the answer:** "Show a severity score, a table of attack techniques and a checklist of next steps."
+3. **Shape the answer:** "Show a severity score, a table of attack techniques and a checklist of next steps. Count the failed logins exactly instead of letting the model guess, and add the locked-out user who was already reset as a low-severity example."
+
+The exact prompts ship in every team repo, in the brief's "Prompts to send" section (`catalog/it-alert-triage.md`).
 
 After that, one prompt per feature:
 

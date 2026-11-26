@@ -85,9 +85,11 @@ the model are listed under the answer.
 
 ## Step 3: Shape the answer
 
-> Show a severity score, a table of attack techniques and a checklist of next steps.
+> Show a severity score, a table of attack techniques and a checklist of next steps. Count the
+> failed logins exactly instead of letting the model guess, and add the locked-out user who was
+> already reset as a low-severity example.
 
-Adds `hooks.py` and two blocks. This is `examples/alert-triage/app/`, the finished app that
+Adds `hooks.py`, two blocks and the benign example. This is `examples/alert-triage/app/`, the finished app that
 ships in every team repo:
 
 ```text
