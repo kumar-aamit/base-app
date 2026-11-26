@@ -102,10 +102,10 @@ def test_smoke_runs_every_example(tmp_path, capsys):
     tc = TestClient(create_app(make_app(tmp_path)))
 
     def fetch(method, url, body=None):
-        r = tc.request(method, url.replace("https://team.example", ""), json=body)
+        r = tc.request(method, url.replace("https://app.example", ""), json=body)
         return r.status_code, r.json()
 
-    code = smoke.main(url="https://team.example", fetch=fetch)
+    code = smoke.main(url="https://app.example", fetch=fetch)
     out = capsys.readouterr().out
     assert code == 0, out
     assert "triage" in out and "Spray" in out and "mock" in out

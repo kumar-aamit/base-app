@@ -1,4 +1,4 @@
-# Containerfile (base image) needs platform/; Dockerfile (a team image, for local tests) needs app/.
+# Containerfile (base image) needs platform/; Dockerfile (a user's app image, for local tests) needs app/.
 *
 !platform/baseapp
 !platform/requirements.txt

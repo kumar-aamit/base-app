@@ -37,7 +37,7 @@ jobs:
             git checkout --force FETCH_HEAD
           fi
 
-      - name: Resolve team configuration
+      - name: Resolve app configuration
         env:
           GITEA_REPOSITORY: ${{ gitea.repository }}
           VAR_NAMESPACE: ${{ vars.OPENSHIFT_NAMESPACE }}

@@ -7,6 +7,6 @@
 6. No network calls and no external URLs, in code or in HTML.
 7. If no building block fits a request, say so and suggest the closest one.
 8. Run make check after every change. Do not push until it passes.
-9. Push to your team repo (see team.env), run make wait and make smoke, and report the timings.
+9. Push to your repo (see lab.env), run make wait and make smoke, and report the timings.
 
 How to build and change the app: skills/base-app/SKILL.md.

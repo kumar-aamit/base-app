@@ -1,6 +1,6 @@
 ---
 name: base-app
-description: Build or change the team's app in app/. Use for every request about the app — build it, add a screen, input, answer block, knowledge, sample data or a hook — and before every push.
+description: Build or change the user's app in app/. Use for every request about the app — build it, add a screen, input, answer block, knowledge, sample data or a hook — and before every push.
 ---
 
 # base-app
@@ -19,7 +19,7 @@ Markdown, CSV and text files, plus an optional `hooks.py`. Read `AGENTS.md` firs
 3. Run `make check`. It names the file, the field and the fix; do what it says and run it again.
 4. Run `make dev` and try an example: `curl -s localhost:8742/api/screens/<screen>/run -H 'content-type: application/json' -d '{"example": 0}'`.
 5. `git add app && git commit -m "<what changed>" && git push`, then `make wait` and `make smoke`.
-6. Report the app URL from `team.env` and the timings `make smoke` printed.
+6. Report the app URL from `lab.env` and the timings `make smoke` printed.
 
 ## app/ layout
 
