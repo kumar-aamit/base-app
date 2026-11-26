@@ -39,21 +39,24 @@ the app URL; open it and click an example before sending the next. `GUIDE.md` ha
 Prompt 1, Build:
 
 ```text
-Build an alert triage app for our HQ security team. An analyst pastes an alert, can attach the
-logs and pick the affected system, and gets a verdict on what happened. Use the Alert Triage brief.
+Build an alert triage app for our HQ security team. An analyst pastes an alert, can attach its
+logs and pick the affected system, and gets a verdict on what happened. Make up sample alerts
+and logs to try it with. Use the Alert Triage brief.
 ```
 
 Prompt 2, Ground it:
 
 ```text
-Use our runbooks. For each next step, show which runbook section it came from.
+Add our incident runbooks for password spray, phishing and malware, and give the analyst next
+steps from them, each showing the runbook section it came from.
 ```
 
 Prompt 3, Shape the answer:
 
 ```text
-Give me a severity score and the attack techniques, and count the failed logins exactly instead
-of guessing. Add a harmless example too, like a user who got locked out and was already reset.
+Add a severity score from 0 to 100 and a table of the MITRE ATT&CK techniques. Count the failed
+logins in the logs exactly instead of letting the AI guess. Add a harmless example too: a user
+who got locked out and was already reset.
 ```
 
 ## What each prompt builds

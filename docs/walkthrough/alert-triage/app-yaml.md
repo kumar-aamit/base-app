@@ -19,8 +19,9 @@ screens: []             # empty shows the placeholder page
 
 ## After the first prompt
 
-> Build an alert triage app for our HQ security team. An analyst pastes an alert, can attach the
-> logs and pick the affected system, and gets a verdict on what happened. Use the Alert Triage brief.
+> Build an alert triage app for our HQ security team. An analyst pastes an alert, can attach its
+> logs and pick the affected system, and gets a verdict on what happened. Make up sample alerts
+> and logs to try it with. Use the Alert Triage brief.
 
 The prompt names no color or mark; the harness takes them from the brief's
 [Step 1: Build](../../../catalog/it-alert-triage.md#step-1-build) and replaces the file with:
