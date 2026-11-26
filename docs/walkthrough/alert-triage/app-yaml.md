@@ -2,14 +2,14 @@
 
 `app/app.yaml` is the app's identity: its name, its look, where its data stays, and which
 screens it has. It is five lines. Lab users normally never type it: they describe the app in
-a prompt and OpenClaw writes the file. They can also edit it by hand; the steps are the same.
+a prompt and the agentic harness writes the file. They can also edit it by hand; the steps are the same.
 
 ## At lab start
 
 Every team repo starts with this file. With `screens: []` the app shows the placeholder page.
 
 ```yaml
-# Your app. OpenClaw fills this in from your first prompt.
+# Your app. The agentic harness fills this in from your first prompt.
 name: Team app          # shown in the header, 1 to 40 characters
 # mark: shield          # one letter, or an icon from the platform's set
 # brand: "#1D4ED8"      # hex color for the mark and header accent
@@ -21,7 +21,7 @@ screens: []             # empty shows the placeholder page
 
 > Build the Alert Triage app from catalog/it-alert-triage.md for the HQ security team.
 
-OpenClaw replaces the file with:
+The harness replaces the file with:
 
 ```yaml
 name: Alert Triage
@@ -48,7 +48,7 @@ needs both. After the push the placeholder is gone and `/` opens the Triage scre
 
 ## Changing it later, one prompt at a time
 
-Each of these prompts changes one line, and OpenClaw runs `make check` before it pushes.
+Each of these prompts changes one line, and the harness runs `make check` before it pushes.
 
 | Prompt | Change in app.yaml |
 |---|---|

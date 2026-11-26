@@ -13,7 +13,7 @@ stamps `platform/PIN`:
 
 ```text
 team-07/
-├── AGENTS.md                      the 9 rules OpenClaw follows
+├── AGENTS.md                      the 9 rules the agentic harness follows
 ├── skills/base-app/SKILL.md       how to write app/: fields, blocks, recipes, the loop
 ├── catalog/it-alert-triage.md     the brief prompt 1 names
 ├── examples/alert-triage/app/     the finished app, to copy patterns from
@@ -21,7 +21,7 @@ team-07/
 │   └── app.yaml                   name: Team app, screens: []  → the placeholder page
 ├── Dockerfile                     FROM the base image, COPY app/
 ├── Makefile                       dev, check, wait, smoke
-├── team.env.example               team number, Gitea remote, app URL, model endpoints
+├── team.env.example               team number, code repo remote, app URL, model endpoints
 ├── .gitea/workflows/              build and deploy on push
 └── platform/                      read-only copy of the platform for make dev and make check
     ├── baseapp/  requirements.txt  requirements-dev.txt
@@ -37,7 +37,7 @@ green or amber; here they are skipped because this is mock mode.
 
 > Build the Alert Triage app from catalog/it-alert-triage.md for the HQ security team.
 
-OpenClaw writes five files in `app/` ([step-1-build/app](step-1-build/app)):
+The harness writes five files in `app/` ([step-1-build/app](step-1-build/app)):
 
 ```text
 app/
@@ -126,7 +126,7 @@ The benign example scores low, so analysts can see the score moves:
 
 ![Step 3: the benign case](step-3-benign.png)
 
-## What OpenClaw runs after each prompt
+## What the harness runs after each prompt
 
 ```text
 $ make check
