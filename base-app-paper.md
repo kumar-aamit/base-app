@@ -334,11 +334,11 @@ Errors name the file, the field and the fix, because that is what a model can ac
 
 Three prompts build the lead app, Alert Triage, in the review layout, and every later prompt adds one building block. Lab users type them, and they need not be technical, so each prompt is plain language and the guide page gives basic instructions around it. `docs/walkthrough/alert-triage/` shows `app/` after each of the three prompts.
 
-1. **Build:** name, mark, brand and site; the triage screen with alert, logs and asset inputs and a Verdict; the asset list and the spray log; two examples. The harness writes `app.yaml`, the screen, its prompt and synthetic data, then checks, pushes and reports the app's URL. A team's own idea works the same way, as long as it fits the review layout.
-2. **Ground it:** three runbooks in `knowledge/`, and a Next steps checklist that cites them.
-3. **Shape the answer:** a Severity score and an Attack techniques table, `hooks.py` to count the failed logins exactly, and the locked-out user as a low-severity example.
+1. **Build:** "Build an alert triage app for our HQ security team. An analyst pastes an alert, can attach the logs and pick the affected system, and gets a verdict on what happened. Use the Alert Triage brief." The harness writes `app.yaml`, the screen, its prompt and synthetic data, then checks, pushes and reports the app's URL. A team's own idea works the same way, as long as it fits the review layout.
+2. **Ground it:** "Use our runbooks. For each next step, show which runbook section it came from."
+3. **Shape the answer:** "Give me a severity score and the attack techniques, and count the failed logins exactly instead of guessing. Add a harmless example too, like a user who got locked out and was already reset."
 
-Each prompt spells out everything its step builds, so the result does not depend on the harness rereading the brief. The full text ships in every team repo, in the brief's "Prompts to send" section (`catalog/it-alert-triage.md`) and in `GUIDE.md`; a test keeps the two identical.
+Prompts are what an analyst would say, not specifications. The brief's **What each prompt builds** section holds the details for each step (inputs, sample data, examples, runbook sections, severity bands), and the skill tells the harness to take whatever a prompt leaves out from the matching step. The prompts ship in every team repo, in the brief and in `GUIDE.md`; a test keeps the two identical.
 
 After that, one prompt per feature:
 

@@ -36,9 +36,10 @@ green or amber; here they are skipped because this is mock mode.
 
 ## Step 1: Build
 
-> **Prompt 1** ([full text](../../../catalog/it-alert-triage.md#prompt-1-build)): build Alert
-> Triage for the HQ security team, with the triage screen's three inputs, a Verdict, the asset
-> list, the spray log and two examples.
+> Build an alert triage app for our HQ security team. An analyst pastes an alert, can attach the
+> logs and pick the affected system, and gets a verdict on what happened. Use the Alert Triage brief.
+
+The details come from the brief's [Step 1: Build](../../../catalog/it-alert-triage.md#step-1-build).
 
 The harness writes five files in `app/` ([step-1-build/app](step-1-build/app)):
 
@@ -59,8 +60,9 @@ What each line of `app.yaml` does, and how a team changes it later: [app-yaml.md
 
 ## Step 2: Ground it
 
-> **Prompt 2** ([full text](../../../catalog/it-alert-triage.md#prompt-2-ground-it)): add the
-> three runbooks to knowledge/ and a Next steps checklist that cites them.
+> Use our runbooks. For each next step, show which runbook section it came from.
+
+The details come from the brief's [Step 2: Ground it](../../../catalog/it-alert-triage.md#step-2-ground-it).
 
 Adds `knowledge/` and a cited checklist ([step-2-ground/app](step-2-ground/app)):
 
@@ -89,9 +91,10 @@ the model are listed under the answer.
 
 ## Step 3: Shape the answer
 
-> **Prompt 3** ([full text](../../../catalog/it-alert-triage.md#prompt-3-shape-the-answer)): add
-> a Severity score and an Attack techniques table, a hook that counts the failed logins exactly,
-> and the locked-out user as a low-severity example.
+> Give me a severity score and the attack techniques, and count the failed logins exactly instead
+> of guessing. Add a harmless example too, like a user who got locked out and was already reset.
+
+The details come from the brief's [Step 3: Shape the answer](../../../catalog/it-alert-triage.md#step-3-shape-the-answer).
 
 Adds `hooks.py`, two blocks and the benign example. This is `examples/alert-triage/app/`, the finished app that
 ships in every team repo:

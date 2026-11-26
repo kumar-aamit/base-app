@@ -19,11 +19,11 @@ screens: []             # empty shows the placeholder page
 
 ## After the first prompt
 
-> Build an app called Alert Triage for the HQ security team. Use the shield mark, brand color
-> #1D4ED8 and site "HQ data center". …
+> Build an alert triage app for our HQ security team. An analyst pastes an alert, can attach the
+> logs and pick the affected system, and gets a verdict on what happened. Use the Alert Triage brief.
 
-(The start of prompt 1; [full text](../../../catalog/it-alert-triage.md#prompt-1-build).) The
-harness replaces the file with:
+The prompt names no color or mark; the harness takes them from the brief's
+[Step 1: Build](../../../catalog/it-alert-triage.md#step-1-build) and replaces the file with:
 
 ```yaml
 name: Alert Triage

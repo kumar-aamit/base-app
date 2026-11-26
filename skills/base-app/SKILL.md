@@ -11,6 +11,10 @@ Markdown, CSV and text files, plus an optional `hooks.py`. Read `AGENTS.md` firs
 ## The loop
 
 1. Read the request, the brief in `catalog/` if one is named, and `examples/alert-triage/app/`.
+   Users type short prompts in their own words. If the brief has **What each prompt builds**, match
+   the prompt to its step (usually the next one `app/` does not have yet), take every detail the
+   prompt leaves out from that step, and build only that step. Later prompts in the same chat
+   continue the same brief even when they do not name it.
 2. Write or change files in `app/`. One request changes one building block.
 3. Run `make check`. It names the file, the field and the fix; do what it says and run it again.
 4. Run `make dev` and try an example: `curl -s localhost:8742/api/screens/<screen>/run -H 'content-type: application/json' -d '{"example": 0}'`.
