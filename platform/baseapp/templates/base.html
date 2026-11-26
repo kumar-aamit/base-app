@@ -16,6 +16,7 @@
         {%- if spec.mark_icon %}{{ icon(spec.mark_icon) }}{% else %}{{ spec.mark_letter }}{% endif -%}
       </span>
       <span class="app-name">{{ spec.name }}</span>
+      {%- if lab_user %}<span class="lab-user">· {{ lab_user }}</span>{% endif %}
     </div>
     <span class="badge" title="The model, data, code and fonts all run on-site">
       {{ icon("wifi-off") }} Air-gap capable
@@ -36,6 +37,7 @@
     {{ icon("server") }} Data stays in {{ site }}
     <span class="sep">·</span> platform {{ platform_version }}
     <span class="sep">·</span> build <code>{{ commit[:7] }}</code>
+    <span class="sep">·</span> <a href="/start">Start page</a>
   </footer>
 </body>
 </html>

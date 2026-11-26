@@ -18,21 +18,25 @@ Values in `<angle brackets>` come from your lab page.
 - Use only the made-up sample data in this repo. Never paste real alerts, logs, customer,
   patient or employee data.
 
-## Step 0: see your app's placeholder
+## Step 0: see your app's start page
 
 1. Open your app URL, `<your app URL>`, in a browser. If you don't have it yet,
    do step 1 below and ask the harness: *What is my app URL?*
-2. You see **Your app will appear here** and three checks:
+2. You see **What do you want to build?** with three checks under it:
 
-   | Row | Green means | If it is not green |
+   | Check | Green means | If it is not green |
    |---|---|---|
-   | App | The app is running; it shows the build it is on | Wait a minute and refresh |
+   | App | The app is running | Wait a minute and refresh |
    | Fast model | The fast tier answered | Amber `unreachable` or `not served`: tell the lab staff |
    | Smart model | The smart tier answered | Same as above |
 
    Grey **skipped: mock mode** means the app is running without models, for rehearsals.
+3. Alert Triage is picked, with prompt 1 ready and a preview of the screen it builds. Each
+   prompt below has a **Copy prompt** button there, so you can copy instead of typing. The page
+   reloads by itself when a new build is live and ticks off each prompt the app already has.
+   Once your app exists, the **Start page** link at the bottom of every page brings you back.
 
-![The placeholder before the first prompt](guide-images/step-0-start.png)
+![The start page before the first prompt](guide-images/step-0-start.png)
 
 ## Step 1: open the harness
 
@@ -43,7 +47,7 @@ Values in `<angle brackets>` come from your lab page.
 
 ## Step 2: build the app (prompt 1)
 
-Type or paste:
+Copy it from the start page, or type or paste:
 
 ```text
 Build an alert triage app for our HQ security team. An analyst pastes an alert, can attach its
@@ -57,7 +61,7 @@ Alert Triage brief: the brief tells the harness the details you leave out.
 The harness writes the app's files in `app/`, runs `make check`, pushes, waits for the new
 build, and reports your app URL with timings. That takes a few minutes. Then:
 
-1. Refresh your app URL. The placeholder is replaced by **Triage an alert**.
+1. Your app URL now opens **Triage an alert** instead of the start page.
 2. Click the example **Password spray, then a login**. You get a verdict.
 3. Look under the answer: **Answered on-site in … s**, with the path from this device to the
    app to the smart model, all inside the site.
@@ -66,7 +70,7 @@ build, and reports your app URL with timings. That takes a few minutes. Then:
 
 ## Step 3: ground it in your runbooks (prompt 2)
 
-Type or paste:
+Copy it from the start page, or type or paste:
 
 ```text
 Add our incident runbooks for password spray, phishing and malware, and give the analyst next
@@ -80,7 +84,7 @@ chip naming the runbook section it came from, and **Sources searched** under the
 
 ## Step 4: shape the answer (prompt 3)
 
-Type or paste:
+Copy it from the start page, or type or paste:
 
 ```text
 Add a severity score from 0 to 100 and a table of the MITRE ATT&CK techniques. Count the failed

@@ -22,6 +22,7 @@ from .health import CheckResult, run_checks
 from .hookrunner import HookError
 from .runner import RunError, RunResult, Runtime, load_runtime, run_screen
 from .screens import ScreenError
+from .start import bold, preview, steps_done, use_cases
 
 HERE = Path(__file__).parent
 MAX_UPLOAD_BYTES = 2 * 1024 * 1024
@@ -80,6 +81,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
     templates = Jinja2Templates(directory=HERE / "templates")
     templates.env.globals["icon"] = icon
+    templates.env.filters["bold"] = bold
 
     def http_client() -> httpx.AsyncClient:
         if getattr(app.state, "http", None) is None:
@@ -89,7 +91,17 @@ def create_app(settings: Settings) -> FastAPI:
     def page_context(**extra) -> dict:
         screens = list(rt.screens.values()) if rt else []
         return {"spec": spec, "site": site, "config_error": config_error, "commit": settings.commit,
-                "platform_version": __version__, "screens": screens, **extra}
+                "platform_version": __version__, "screens": screens, "lab_user": settings.lab_user, **extra}
+
+    def start_page(request: Request, case_id: str = "", step: str = ""):
+        cases = use_cases()
+        case = next((c for c in cases if c.id == case_id), cases[0])
+        done = steps_done(case, list(rt.screens.values()) if rt else [])
+        last = len(case.steps) - 1
+        view = int(step) - 1 if step.isdigit() and 1 <= int(step) <= last + 1 else min(done, last)
+        return templates.TemplateResponse(request, "start.html", page_context(
+            cases=cases, case=case, done=done, view=view, step=case.steps[view],
+            blocks=preview(case, view)))
 
     def screen_or_404(name: str):
         if rt is None or name not in rt.screens:
@@ -130,7 +142,8 @@ def create_app(settings: Settings) -> FastAPI:
         rows = [CheckResult("App", True, f"running {settings.commit[:7]}", None)]
         rows += await run_checks(settings, http_client())
         if request.headers.get("hx-request"):
-            return templates.TemplateResponse(request, "partials/checks.html", {"rows": rows})
+            partial = "status" if request.query_params.get("view") == "status" else "checks"
+            return templates.TemplateResponse(request, f"partials/{partial}.html", {"rows": rows})
         return [asdict(r) for r in rows]
 
     @app.get("/api/screens")
@@ -142,7 +155,11 @@ def create_app(settings: Settings) -> FastAPI:
     async def index(request: Request):
         if rt and rt.screens:
             return RedirectResponse(f"/s/{next(iter(rt.screens))}", status_code=303)
-        return templates.TemplateResponse(request, "placeholder.html", page_context())
+        return start_page(request)
+
+    @app.get("/start", response_class=HTMLResponse)
+    async def start(request: Request, case: str = "", step: str = ""):
+        return start_page(request, case, step)
 
     @app.get("/s/{name}", response_class=HTMLResponse)
     async def screen_page(request: Request, name: str):
