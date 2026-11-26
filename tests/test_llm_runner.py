@@ -30,8 +30,8 @@ def test_sends_schema_and_parses_json():
     def h(req):
         seen.update(json.loads(req.content))
         return reply('{"text": "ok"}')
-    answer, ms = call(h, reasoning=False)
-    assert answer == {"text": "ok"} and ms >= 0
+    answer, ms, tokens = call(h, reasoning=False)
+    assert answer == {"text": "ok"} and ms >= 0 and tokens >= 1
     assert seen["model"] == "nvidia/nemotron-3.5-super"
     assert seen["response_format"]["json_schema"]["schema"] == SCHEMA
     assert seen["chat_template_kwargs"] == {"enable_thinking": False}

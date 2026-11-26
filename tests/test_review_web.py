@@ -74,4 +74,4 @@ def test_broken_screen_file_shows_error_and_keeps_serving(tmp_path):
     c = TestClient(create_app(settings))
     assert c.get("/health").status_code == 200
     page = htmllib.unescape(c.get("/").text)
-    assert "app/screens/triage.yaml" in page and "What do you want to build?" in page
+    assert "app/screens/triage.yaml" in page and 'class="tiles"' in page

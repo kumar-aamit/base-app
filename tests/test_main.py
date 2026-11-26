@@ -25,10 +25,10 @@ def test_docs_off_openapi_on(tmp_path):
     assert c.get("/openapi.json").status_code == 200
 
 
-def test_placeholder_shows_brand_badge_and_site(tmp_path):
+def test_empty_app_opens_on_the_status_page_with_brand_and_site(tmp_path):
     html = client(tmp_path, 'name: Alert Triage\nbrand: "#1D4ED8"\nsite: HQ data center\n').get("/").text
     assert "Alert Triage" in html and "#1D4ED8" in html
-    assert "Air-gap capable" in html and "Data stays in HQ data center" in html
+    assert 'class="tiles"' in html and "Air-gapped" in html and "inside HQ data center" in html
 
 
 def test_bad_config_still_serves_and_reports(tmp_path):
