@@ -61,6 +61,14 @@ def test_broken_yaml_reports_and_stops(tmp_path, capsys):
     assert code == 1 and "app/screens/triage.yaml" in out
 
 
+def test_knowledge_outside_app_fails(tmp_path, capsys):
+    make_app(tmp_path)
+    s = tmp_path / "screens" / "triage.yaml"
+    s.write_text(s.read_text().replace("knowledge: knowledge", "knowledge: ../knowledge"))
+    code, out = run_check(tmp_path, capsys)
+    assert code == 1 and 'FAIL  app/screens/triage.yaml: knowledge: "../knowledge' in out and "uses .. to leave app/" in out
+
+
 def test_mock_citing_a_passage_the_search_did_not_find_fails(tmp_path, capsys):
     make_app(tmp_path)
     s = tmp_path / "screens" / "triage.yaml"
