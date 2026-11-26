@@ -11,7 +11,7 @@ Build one small Python platform, base-app, that every lab user's app runs on. Ea
 - **Models:** app pods hold no weights. They call the fast and smart open-weights model endpoints already running in dCloud, and the harness writes code with the smart tier.
 - **Builds:** each push builds the repo's `Dockerfile`, `FROM ${BASE_IMAGE}` plus the `app/` folder, in seconds. Measured on a test VM, a pod is ready in 247 ms and idles at 35.4 MiB.
 
-Before a user's first prompt, their app shows a plain placeholder with live health checks. Every example in this paper builds one lead app, Alert Triage, chosen below. The catalog lists 27 ideas across 8 industries, the lead among them, each with its reason to run locally.
+Before a user's first prompt, their app shows a start page: ten use cases with a prompt to copy, a preview of the screen each one builds, and live health checks. Every example in this paper builds one lead app, Alert Triage, chosen below. The catalog lists 27 ideas across 8 industries, the lead among them, each with its reason to run locally.
 
 ### Status of this version
 
@@ -167,7 +167,7 @@ Each screen's examples do double duty: they are the example chips in the UI and 
 
 ## Visual design
 
-The app design lives on its own canvas, base-app UI. It shows the placeholder, the lead app, Alert Triage, and two more apps built from the same parts, plus the How this runs panel (phase 3). Mock-mode screenshots of the built version are in `docs/walkthrough/alert-triage/`, `docs/gallery/` (eight more review-layout apps) and `docs/screenshots/final/`.
+The app design lives on its own canvas, base-app UI. It shows the start page, the lead app, Alert Triage, and two more apps built from the same parts, plus the How this runs panel (phase 3). Mock-mode screenshots of the built version are in `docs/walkthrough/alert-triage/`, `docs/gallery/` (eight more review-layout apps) and `docs/screenshots/final/`.
 
 | Element | Choice | Why |
 |---|---|---|
@@ -461,11 +461,11 @@ Fifteen more ideas fit the same platform unchanged. IT and network operations is
 
 ## What ships in each lab user's repo
 
-Each repo starts with a placeholder app, the finished lead example and its catalog brief. The example's chips double as the platform's end-to-end tests.
+Each repo starts with an empty app that shows the start page, the finished lead example and its catalog brief. The example's chips double as the platform's end-to-end tests.
 
 | Item | Status | What it is | Why it is there |
 |---|---|---|---|
-| Placeholder app | Built | A plain screen saying the app will appear here, with live health checks | Proves push, build, deploy and model access before the first prompt |
+| Start page | Built | Ten use cases, each with a prompt to copy and a preview; Alert Triage's three prompts are ticked off as the app gains each step; live health checks; reloads when a new build is live; reachable at `/start` from every page | Proves push, build, deploy and model access before the first prompt, and hands the user each next prompt |
 | Alert Triage (the lead) | Built | Review layout, security operations, smart model | Pattern for a log upload, a select from CSV, a hook, knowledge search, a score bar, a table and a checklist |
 | `catalog/it-alert-triage.md` | Built | The brief prompt 1 names | Starting point for the lead app |
 | Line Assist | Phase 3 | Workspace layout, manufacturing, fast model | Pattern for inputs, knowledge search and a streamed answer |
@@ -476,7 +476,7 @@ Acceptance checks for the platform:
 
 - `make check` passes against the mock model in under 5 seconds. Met locally.
 - An idle pod stays under its 64 MiB request and starts in under 1 second. Met on a test VM: 35.4 MiB, ready in 247 ms.
-- On a fresh user namespace, the placeholder shows every health check passing.
+- On a fresh user namespace, the start page shows every health check passing.
 - Alert Triage's examples run end to end against the dCloud models through `make smoke`.
 - A one-line change is live within a minute of the push.
 - The harness builds Alert Triage from its catalog brief in three prompts, using only the skill and AGENTS.md.

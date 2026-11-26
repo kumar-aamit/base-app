@@ -19,7 +19,7 @@ user-7/
 ├── catalog/it-alert-triage.md     the brief prompt 1 names
 ├── examples/alert-triage/app/     the finished app, to copy patterns from
 ├── app/
-│   └── app.yaml                   name: Your app, screens: []  → the placeholder page
+│   └── app.yaml                   name: Your app, screens: []  → the start page
 ├── Dockerfile                     FROM the base image, COPY app/
 ├── Makefile                       dev, check, wait, smoke
 ├── lab.env.example                lab user, code repo remote, app URL, model endpoints
@@ -29,10 +29,11 @@ user-7/
     └── PIN                        make check fails if platform/ is edited
 ```
 
-The deployed app shows the placeholder with live checks. On the cluster the model rows are
-green or amber; here they are skipped because this is mock mode.
+The deployed app shows the start page: prompt 1 ready to copy, a preview of the screen it
+builds, and live checks. On the cluster the model checks are green or amber; here they are
+skipped because this is mock mode.
 
-![Step 0: placeholder](step-0-start.png)
+![Step 0: the start page](step-0-start.png)
 
 ## Step 1: Build
 

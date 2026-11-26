@@ -36,7 +36,7 @@ These are settled; reopen them only with the lab owner.
 | Seed by explicit list | `SEED` in `build-lab-repo.sh`: GUIDE.md, guide-images, AGENTS.md, Dockerfile, Makefile, lab.env.example, .gitignore, .gitea, app, catalog, examples, skills, platform. |
 | Base-app only | Containerfile, .dockerignore, tests, scripts, docs, base-app-paper.md, pyproject.toml, requirements-test.txt. `tests/test_seed.py` fails if a new top-level path is in neither list. |
 | `platform/PIN` | A hash of `platform/baseapp`, written only into the seeded copy. `make check` in a lab user's repo fails if `platform/` was edited; in this repo it skips the comparison. |
-| Working copy | `/Users/amitkumar/PycharmProjects/hackathon-v2`. The older copy under `Documents/demo-guide/base-app` is stale. Remote `origin` is the public GitHub repo `kumar-aamit/base-app` (`main`, tags `phase-1` and `phase-2`); `final` is local only. |
+| Working copy | `/Users/amitkumar/PycharmProjects/hackathon-v2`. The older copy under `Documents/demo-guide/base-app` is stale. Remote `origin` is the public GitHub repo `kumar-aamit/base-app` (`main`, tags `phase-1` and `phase-2`); `final` is pushed too. |
 
 ### Stack and runtime
 
@@ -49,6 +49,8 @@ These are settled; reopen them only with the lab owner.
 | Base image | Two stages, ubi9 python-312 into python-312-minimal; runs as any UID in group 0 with a read-only root and `/tmp` as emptyDir. Measured: ready in 247 ms, idle at 35.4 MiB. |
 | Pod sizing (planned) | Requests 25m CPU / 64Mi, limits 500m / 256Mi, set in the Deployment template with Task 7. |
 | Stateless | No database. Knowledge is indexed in memory at startup. |
+| Start page | `/` shows it until `app.yaml` lists a screen; `/start` always does, linked from every footer. Ten use cases from `platform/baseapp/usecases.yaml` (in the base image, since `catalog/` is not in the app image); Alert Triage's three prompts must match its brief word for word. Steps tick from what the app has: a screen, then `knowledge:` and a checklist, then a score and a table. It polls `/api/version` and reloads on a new build. No harness progress and no model call: the app cannot see the harness. |
+| Lab user label | `LAB_USER` in the Deployment's environment shows `· user-7` beside the app name; unset, nothing shows. |
 
 ### Models
 
@@ -96,7 +98,7 @@ These are settled; reopen them only with the lab owner.
 
 ## Open items
 
-- Wire `start-lab.sh` to seed `dist/lab-repo/`, write each user's `lab.env`, and pass `BASE_IMAGE` to the BuildConfig (phase 1 Task 7); then the on-cluster acceptance run (Task 8). In `start-lab.sh`, rename `TEAM_APP_DIR` to `LAB_APP_DIR`, `team-<N>` to `user-<N>` and `team.env` to `lab.env` to match base-app.
+- Wire `start-lab.sh` to seed `dist/lab-repo/`, write each user's `lab.env`, and pass `BASE_IMAGE` to the BuildConfig (phase 1 Task 7); then the on-cluster acceptance run (Task 8). In `start-lab.sh`, rename `TEAM_APP_DIR` to `LAB_APP_DIR`, `team-<N>` to `user-<N>` and `team.env` to `lab.env` to match base-app, and set `LAB_USER` on each Deployment.
 - Decide whether the lab-start machine fetches the public GitHub repo or a copy on the lab's code repo server.
 - Run the examples against the real models; every screenshot so far is mock mode.
 - Phase 3: workspace and assistant layouts, streaming, follow-up chat, charts, image input. Phase 4: the other 26 catalog briefs and harness provisioning.
@@ -109,6 +111,7 @@ Done on `final`:
 - [x] Update the paper: the repo's `Dockerfile`, review layout only, Alert Triage in three prompts, generic terms, and unbuilt features marked phase 3 or phase 4.
 - [x] Create a git remote: `origin` on GitHub.
 - [x] Single-user lab sessions: no "team" for the lab user anywhere. `lab.env` (`LAB_USER`), `build-lab-repo.sh`, `dist/lab-repo/`, repos named `user-<N>`, and the default app name "Your app".
+- [x] Start page replaces the placeholder: ten use cases, copy buttons, live step ticks, reload on a new build, `/start` from every footer, `LAB_USER` label. Bundled fonts only.
 
 ## File tree
 
@@ -119,7 +122,7 @@ Paths marked **seeded** are what `build-lab-repo.sh` copies into every lab user'
 ```text
 hackathon-v2/
 ├── .gitea/workflows/build-deploy-openshift.yml   seeded: build and deploy on push
-├── app/                                          seeded: THE user's app; starts as the placeholder
+├── app/                                          seeded: THE user's app; starts empty (the start page)
 │   └── app.yaml
 ├── catalog/                                      seeded: briefs a first prompt can name
 │   └── it-alert-triage.md
@@ -137,7 +140,7 @@ hackathon-v2/
 │   │   ├── *.png
 │   │   └── README.md
 │   ├── screenshots/…                             phase 1 placeholder screenshots
-│   │   └── final/                                alert-triage-final.png, placeholder.png
+│   │   └── final/                                alert-triage-final.png, start-page*.png
 │   ├── superpowers/…                             roadmap and phase plans
 │   └── walkthrough/alert-triage/                 app/ after each of the three prompts
 │       ├── step-1-build/app/…
@@ -165,7 +168,7 @@ hackathon-v2/
 │   ├── baseapp/                                  the platform source
 │   │   ├── static/
 │   │   │   ├── css/base.css
-│   │   │   ├── js/review.js
+│   │   │   ├── js/review.js, js/start.js
 │   │   │   └── vendor/…                          htmx, fonts, icons
 │   │   ├── templates/
 │   │   │   ├── layouts/review.html
@@ -173,9 +176,10 @@ hackathon-v2/
 │   │   │   │   ├── answer.html
 │   │   │   │   ├── checks.html
 │   │   │   │   ├── input.html
-│   │   │   │   └── run_error.html
+│   │   │   │   ├── run_error.html
+│   │   │   │   └── status.html                   the start page's check strip
 │   │   │   ├── base.html
-│   │   │   └── placeholder.html
+│   │   │   └── start.html
 │   │   ├── __init__.py
 │   │   ├── __main__.py                           python -m baseapp: uvicorn on APP_PORT
 │   │   ├── appspec.py                            app.yaml
@@ -192,6 +196,8 @@ hackathon-v2/
 │   │   ├── runner.py                             one run: inputs → hooks → search → prompt → model
 │   │   ├── screens.py                            screen files
 │   │   ├── smoke.py                              make smoke
+│   │   ├── start.py                              start page: use cases, steps done, preview
+│   │   ├── usecases.yaml                         the ten use cases and their prompts
 │   │   └── wait.py                               make wait
 │   ├── requirements-dev.txt
 │   └── requirements.txt
@@ -201,7 +207,7 @@ hackathon-v2/
 │   └── verify-image.sh                           restricted-pod run: ready < 1 s, idle < 64 MiB
 ├── skills/                                       seeded: the harness skill
 │   └── base-app/SKILL.md
-├── tests/                                        base-app only; 95 tests
+├── tests/                                        base-app only; 109 tests
 │   ├── test_appspec.py
 │   ├── test_check_smoke.py
 │   ├── test_config.py
@@ -212,6 +218,7 @@ hackathon-v2/
 │   ├── test_review_web.py
 │   ├── test_screens.py
 │   ├── test_seed.py
+│   ├── test_start.py
 │   ├── test_wait.py
 │   └── test_walkthrough.py
 ├── .dockerignore                                 base-app only

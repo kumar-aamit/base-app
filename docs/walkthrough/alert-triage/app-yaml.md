@@ -6,7 +6,7 @@ a prompt and the agentic harness writes the file. They can also edit it by hand;
 
 ## At lab start
 
-Every lab user's repo starts with this file. With `screens: []` the app shows the placeholder page.
+Every lab user's repo starts with this file. With `screens: []` the app shows the start page.
 
 ```yaml
 # Your app. The agentic harness fills this in from your first prompt.
@@ -14,7 +14,7 @@ name: Your app          # shown in the header, 1 to 40 characters
 # mark: shield          # one letter, or an icon from the platform's set
 # brand: "#1D4ED8"      # hex color for the mark and header accent
 # site: HQ data center  # where data stays, shown in the trust signals
-screens: []             # empty shows the placeholder page
+screens: []             # empty shows the start page
 ```
 
 ## After the first prompt
@@ -35,7 +35,7 @@ screens: [triage]
 ```
 
 and writes `screens/triage.yaml` and `prompts/triage.md`, because every name in `screens:`
-needs both. After the push the placeholder is gone and `/` opens the Triage screen.
+needs both. After the push `/` opens the Triage screen instead of the start page.
 
 ## What each line does
 
@@ -81,5 +81,5 @@ Every message names the file, the field and the fix:
 | A misspelled field, `sites:` | `app/app.yaml: sites: unknown field "sites"; use one of brand, mark, name, screens, site` |
 | A screen listed but not written, `screens: [triage, shift_summary]` | `app/screens/shift_summary.yaml is missing; app.yaml lists screen shift_summary, so add that file` |
 
-If a broken app.yaml is pushed anyway, the app still starts: it shows the placeholder with the
+If a broken app.yaml is pushed anyway, the app still starts: it shows the start page with the
 same message in an amber box at the top, so you see what to fix.
