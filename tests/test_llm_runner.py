@@ -5,17 +5,17 @@ import httpx
 import pytest
 
 from baseapp.config import ModelEndpoint, Settings
-from baseapp.llm import ModelError, complete_json
+from baseapp.llm import ModelError, complete_json, example_of
 from baseapp.runner import RunError, load_runtime, run_screen
 
 EP = ModelEndpoint("http://m:8000/v1", "nvidia/nemotron-3.5-super")
 SCHEMA = {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}
 
 
-def call(handler, reasoning=True):
+def call(handler, reasoning=True, ep=EP):
     async def go():
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
-            return await complete_json(c, EP, None, [{"role": "user", "content": "hi"}], SCHEMA,
+            return await complete_json(c, ep, None, [{"role": "user", "content": "hi"}], SCHEMA,
                                        reasoning=reasoning, tier="smart")
     return asyncio.run(go())
 
@@ -45,6 +45,42 @@ def test_reasoning_on_sends_no_template_switch():
         return reply('{"text": "ok"}')
     call(h)
     assert "chat_template_kwargs" not in seen
+
+
+def test_object_mode_asks_for_json_object_and_puts_the_schema_in_the_prompt():
+    seen = {}
+
+    def h(req):
+        seen.update(json.loads(req.content))
+        return reply('{"text": "ok"}')
+    answer, _, _ = call(h, ep=ModelEndpoint(EP.url, EP.model, json_mode="object"))
+    assert answer == {"text": "ok"}
+    assert seen["response_format"] == {"type": "json_object"}
+    prompt = seen["messages"][-1]["content"]
+    assert prompt.startswith("hi\n\n") and prompt.endswith('{"text": "..."}')
+
+
+def test_prompt_mode_sends_no_response_format():
+    seen = {}
+
+    def h(req):
+        seen.update(json.loads(req.content))
+        return reply('{"text": "ok"}')
+    call(h, ep=ModelEndpoint(EP.url, EP.model, json_mode="prompt"))
+    assert "response_format" not in seen
+    assert seen["messages"][-1]["content"].endswith('{"text": "..."}')
+
+
+def test_example_of_fills_in_a_schema():
+    schema = {"type": "object", "properties": {
+        "risk": {"type": "object", "properties": {"value": {"type": "integer", "minimum": 0}, "label": {"type": "string"}}},
+        "issues": {"type": "array", "items": {"type": "object", "properties": {"Line": {"type": "string"}}}},
+        "why": {"type": "string"}}}
+    assert example_of(schema) == {"risk": {"value": 0, "label": "..."}, "issues": [{"Line": "..."}], "why": "..."}
+
+
+def test_reads_the_json_object_out_of_surrounding_text():
+    assert call(lambda r: reply('Here is the review:\n{"text": "ok"}\nHope this helps.'))[0] == {"text": "ok"}
 
 
 def test_strips_code_fences():

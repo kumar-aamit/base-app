@@ -20,3 +20,9 @@ def test_reads_endpoints_and_strips_trailing_slash():
     assert s.smart.url == "http://nemotron-super.models.svc:8000/v1"
     assert s.smart.configured and s.mock is True
     assert s.api_key is None and s.commit == "abc123"
+
+
+def test_json_mode_per_model_defaults_to_schema():
+    s = Settings.from_env({"LLM_FAST_JSON": "Object", "LLM_SMART_JSON": "typo"})
+    assert s.fast.json_mode == "object" and s.smart.json_mode == "schema"
+    assert Settings.from_env({}).fast.json_mode == "schema"
