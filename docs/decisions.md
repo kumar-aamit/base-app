@@ -254,7 +254,7 @@ hackathon-v2/
 │   └── test_walkthrough.py
 ├── .dockerignore                                 base-app only
 ├── .gitignore                                    seeded
-├── AGENTS.md                                     seeded: the 9 rules the harness follows
+├── AGENTS.md                                     seeded: the 10 rules the harness follows
 ├── GUIDE.md                                      seeded: the lab user's step-by-step guide
 ├── guide-images/                                 seeded: the step screenshots GUIDE.md shows
 ├── base-app-paper.md                             base-app only: the design paper

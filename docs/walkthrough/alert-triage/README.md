@@ -14,7 +14,7 @@ stamps `platform/PIN`:
 ```text
 user-7/
 ├── GUIDE.md                       the lab user's step-by-step guide (+ guide-images/)
-├── AGENTS.md                      the 9 rules the agentic harness follows
+├── AGENTS.md                      the 10 rules the agentic harness follows
 ├── skills/base-app/SKILL.md       how to write app/: fields, blocks, recipes, the loop
 ├── catalog/it-alert-triage.md     the brief prompt 1 names
 ├── examples/alert-triage/app/     the finished app, to copy patterns from
