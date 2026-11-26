@@ -48,7 +48,7 @@ These are settled; reopen them only with the lab owner.
 | Repo name | One repo per lab user, `user-<N>` from the lab user number (`user7` → `user-7`). The lab is single-user sessions: each user has their own repo, k8s namespace, app URL and harness. `start-lab.sh` derives the name today as `team-<N>`; rename it there. |
 | Base image build | dCloud automation builds and deploys the base image at lab start. Lab users never build it. |
 | App image | The repo's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and an `APP_COMMIT` build arg. |
-| Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/`; `start-lab.sh` commits it into each user's code repo through the repo server's Contents API (`LAB_APP_DIR`). The GitHub branch `lab-repo` holds the same folder for seeding by hand; rebuild it from `main`, never edit it. |
+| Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/`; `start-lab.sh` commits it into each user's code repo through the repo server's Contents API (`LAB_APP_DIR`). The GitHub repo `kumar-aamit/openclaw-lab-starter` holds the same folder, to show what OpenClaw starts from and to seed by hand. It is generated: `scripts/publish-lab-repo.sh` rebuilds it from a clean `main` as one commit naming the base-app commit; never commit to it directly. |
 
 ### Repo layout
 
@@ -231,6 +231,7 @@ hackathon-v2/
 │   └── requirements.txt
 ├── scripts/                                      base-app only
 │   ├── build-lab-repo.sh                         writes dist/lab-repo/
+│   ├── publish-lab-repo.sh                       pushes dist/lab-repo/ to openclaw-lab-starter
 │   ├── vendor-assets.sh                          refreshes platform/baseapp/static/vendor/
 │   └── verify-image.sh                           restricted-pod run: ready < 1 s, idle < 64 MiB
 ├── skills/                                       seeded: the harness skill
