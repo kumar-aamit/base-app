@@ -39,6 +39,17 @@ site: HQ data center   # where data stays; shown in the privacy note and footer
 screens: [triage]      # each name needs screens/<name>.yaml and prompts/<name>.md
 ```
 
+## Quoting in YAML
+
+Quote any string value that contains `,` `?` `:` or `#`. Unquoted, `#` starts a comment, `: `
+starts a new field, and inside `{...}` a `,` ends the value, so the file breaks or silently loses text.
+
+```yaml
+label: "Severity: high"
+brand: "#0B6E99"
+inputs: {alert: "212 failed logins, then a success at 02:14. Spray?"}
+```
+
 ## screens/<name>.yaml
 
 ```yaml
@@ -95,6 +106,8 @@ after your prompt. Say in the prompt what each block should contain and to cite 
 Markdown files split at headings; each section is one passage, found by its heading, its text and
 its document's `# title`. Give each document one `# title` and short `##` sections. The 4 best
 passages for the inputs are sent with the prompt and listed under the answer.
+`knowledge:` must name a folder inside `app/`: an absolute path, `..`, or a symlink to anything
+outside `app/` fails `make check`. Copy the documents in instead.
 
 ## hooks.py
 
