@@ -105,7 +105,7 @@ ENV APP_COMMIT=${APP_COMMIT}
 COPY app/ /opt/app-root/app/
 ```
 
-The cluster build passes the base image as `BASE_IMAGE` and the pushed commit as `APP_COMMIT`, which `/api/version` reports. dCloud automation builds the base image at lab start from the base-app repo's own `Containerfile`, which is not seeded; lab users never build it.
+The cluster build passes the base image as `BASE_IMAGE` and the pushed commit as `APP_COMMIT`, which `/api/version` reports. dCloud automation builds the base image once per lab from `platform/Containerfile` in the published starter repo, the same files it seeds into every user's repo; lab users never build it.
 
 Alert Triage, the lead example, is two short files plus its prompt and data:
 
@@ -184,7 +184,7 @@ One base image serves every lab user's app, so each node pulls the platform once
 
 ### Images
 
-- **Base image, base-app:** Red Hat's minimal Python 3.12 runtime (`ubi9/python-312-minimal`) plus the pinned dependencies, the platform, its fonts and static assets, built from the base-app repo's `Containerfile`. It uses the standard two-stage build: install the virtualenv in the full builder image, copy it into the minimal runtime. Rebuilt only when the platform changes.
+- **Base image, base-app:** Red Hat's minimal Python 3.12 runtime (`ubi9/python-312-minimal`) plus the pinned dependencies, the platform, its fonts and static assets, built from `platform/Containerfile`. It uses the standard two-stage build: install the virtualenv in the full builder image, copy it into the minimal runtime. Rebuilt only when the platform changes.
 - **App image:** the repo's `Dockerfile`, `FROM ${BASE_IMAGE}` plus `COPY app/` and the `APP_COMMIT` build arg. That layer is the size of the folder, so a rebuild takes seconds and every node already caches the rest. Each user's k8s namespace runs one Deployment of its own app image.
 
 | Pod setting | Default | Why |

@@ -46,9 +46,9 @@ These are settled; reopen them only with the lab owner.
 | One platform, one folder per user | Every lab user's repo is the platform plus one `app/` folder. The agentic harness edits only `app/`. |
 | Lead use case | Alert Triage (IT security), built in the Review layout in three prompts: Build, Ground it, Shape the answer. |
 | Repo name | One repo per lab user, `user-<N>` from the lab user number (`user7` → `user-7`). The lab is single-user sessions: each user has their own repo, k8s namespace, app URL and harness. `start-lab.sh` derives the name today as `team-<N>`; rename it there. |
-| Base image build | dCloud automation builds and deploys the base image at lab start. Lab users never build it. |
+| Base image build | dCloud automation builds the base image once per lab from `platform/Containerfile` in a clone of `openclaw-lab-starter`, the same clone it seeds every user's repo from, so the image and the seeded `platform/` always match. The lab needs only the starter repo; base-app is where the platform is developed. Lab users never build it. |
 | App image | The repo's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and an `APP_COMMIT` build arg. |
-| Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/`; `start-lab.sh` commits it into each user's code repo through the repo server's Contents API (`LAB_APP_DIR`). The GitHub repo `kumar-aamit/openclaw-lab-starter` holds the same folder, to show what OpenClaw starts from and to seed by hand. It is generated: `scripts/publish-lab-repo.sh` rebuilds it from a clean `main` as one commit naming the base-app commit; never commit to it directly. |
+| Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/` and `scripts/publish-lab-repo.sh` pushes it from a clean `main` to the GitHub repo `kumar-aamit/openclaw-lab-starter`, one commit per base-app commit. `start-lab.sh` commits a clone of that repo (`LAB_STARTER_DIR`) into each user's code repo through the repo server's Contents API. The starter is generated: never commit to it directly. |
 
 ### Repo layout
 
@@ -57,7 +57,7 @@ These are settled; reopen them only with the lab owner.
 | The repo root is laid out as a lab user's repo | What you open is what each lab user gets, plus base-app tooling beside it. |
 | `platform/baseapp/` is the source | Not a generated copy. The package is `baseapp`, not `platform`, which would shadow the standard library. |
 | Seed by explicit list | `SEED` in `build-lab-repo.sh`: GUIDE.md, guide-images, AGENTS.md, Dockerfile, Makefile, lab.env.example, .gitignore, .gitea, app, catalog, examples, skills, platform. |
-| Base-app only | Containerfile, .dockerignore, tests, scripts, docs, base-app-paper.md, pyproject.toml, requirements-test.txt. `tests/test_seed.py` fails if a new top-level path is in neither list. |
+| Base-app only | .dockerignore, tests, scripts, docs, base-app-paper.md, pyproject.toml, requirements-test.txt. `tests/test_seed.py` fails if a new top-level path is in neither list. |
 | `platform/PIN` | A hash of `platform/baseapp`, written only into the seeded copy. `make check` in a lab user's repo fails if `platform/` was edited; in this repo it skips the comparison. |
 | Working copy | `/Users/amitkumar/PycharmProjects/hackathon-v2`. The older copy under `Documents/demo-guide/base-app` is stale. Remote `origin` is the public GitHub repo `kumar-aamit/base-app` (`main`, tags `phase-1` and `phase-2`); `final` is pushed too. |
 
@@ -122,7 +122,7 @@ These are settled; reopen them only with the lab owner.
 ## Open items
 
 - On-cluster acceptance run (phase 1 Task 8). Still to rename in the automation: `team-<N>` to `user-<N>` and `team.env` to `lab.env`. Found on the first manual run (`team-1`): the `project-resources` quota rejects build pods without `resources.limits`, and a BuildConfig without `dockerStrategy.from` looks up the `Dockerfile`'s `FROM base-app:latest` on public registries and fails.
-- Done in openclaw-demo `a656f65` (phase 1 Task 7, changed from per-namespace to shared): bootstrap builds `base-app:latest` once per lab in `BASE_APP_NAMESPACE` (default `base-app`) with limits set, only when the tag is missing or `BASE_APP_REBUILD=1`, and grants each user namespace `system:image-puller`. Each user's BuildConfig sets `dockerStrategy.from` to that tag. The Deployment drops the PVC and old app env, sets the `LLM_*` tiers, `LAB_USER` and `SITE_NAME`, and probes `/healthz`. `start-lab.sh` seeds from `build-lab-repo.sh` (`LAB_APP_DIR`, `TEAM_APP_DIR` still accepted).
+- Done in openclaw-demo `a656f65` (phase 1 Task 7, changed from per-namespace to shared): bootstrap builds `base-app:latest` once per lab in `BASE_APP_NAMESPACE` (default `base-app`) with limits set, only when the tag is missing or `BASE_APP_REBUILD=1`, and grants each user namespace `system:image-puller`. Each user's BuildConfig sets `dockerStrategy.from` to that tag. The Deployment drops the PVC and old app env, sets the `LLM_*` tiers, `LAB_USER` and `SITE_NAME`, and probes `/healthz`. Since `b3150e9` the lab needs only an `openclaw-lab-starter` clone: the base image builds from its `platform/Containerfile` and `start-lab.sh` seeds from it, so the lab machine needs neither base-app nor Python.
 - Decide whether the lab-start machine fetches the public GitHub repo or a copy on the lab's code repo server.
 - Run the examples against the real models; every screenshot so far is mock mode.
 - Phase 3: workspace and assistant layouts, streaming, follow-up chat, charts, image input. Phase 4: the other 26 catalog briefs and harness provisioning.
@@ -227,6 +227,7 @@ hackathon-v2/
 │   │   ├── smoke.py                              make smoke
 │   │   ├── status.py                             System status page: tiles, ask, load test
 │   │   └── wait.py                               make wait
+│   ├── Containerfile                             the base image: podman build -f platform/Containerfile .
 │   ├── requirements-dev.txt
 │   └── requirements.txt
 ├── scripts/                                      base-app only
@@ -256,7 +257,6 @@ hackathon-v2/
 ├── GUIDE.md                                      seeded: the lab user's step-by-step guide
 ├── guide-images/                                 seeded: the step screenshots GUIDE.md shows
 ├── base-app-paper.md                             base-app only: the design paper
-├── Containerfile                                 base-app only: the base image
 ├── Dockerfile                                    seeded: the app image
 ├── Makefile                                      seeded: dev, check, wait, smoke
 ├── pyproject.toml                                base-app only: pytest settings

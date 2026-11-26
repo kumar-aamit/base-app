@@ -8,7 +8,7 @@ the mock model (`LLM_MOCK=1`) answering each screen's first example.
 
 dCloud automation builds the base image and seeds every lab user's repo with
 `scripts/build-lab-repo.sh`. The base-app repo's root already has this layout; the script
-copies these paths, leaves out the base-app tooling (Containerfile, tests, scripts, docs), and
+copies these paths, leaves out the base-app tooling (tests, scripts, docs), and
 stamps `platform/PIN`:
 
 ```text
