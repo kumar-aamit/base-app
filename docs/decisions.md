@@ -48,7 +48,7 @@ These are settled; reopen them only with the lab owner.
 | Repo name | One repo per lab user, `user-<N>` from the lab user number (`user7` → `user-7`). The lab is single-user sessions: each user has their own repo, k8s namespace, app URL and harness. `start-lab.sh` derives the name today as `team-<N>`; rename it there. |
 | Base image build | dCloud automation builds and deploys the base image at lab start. Lab users never build it. |
 | App image | The repo's `Dockerfile` is `FROM ${BASE_IMAGE}` plus `COPY app/` and an `APP_COMMIT` build arg. |
-| Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/`; `start-lab.sh` commits it into each user's code repo through the repo server's Contents API (`LAB_APP_DIR`). The `start-lab.sh` wiring is still to do. |
+| Seeding | `scripts/build-lab-repo.sh` writes `dist/lab-repo/`; `start-lab.sh` commits it into each user's code repo through the repo server's Contents API (`LAB_APP_DIR`). The GitHub branch `lab-repo` holds the same folder for seeding by hand; rebuild it from `main`, never edit it. |
 
 ### Repo layout
 
@@ -70,7 +70,7 @@ These are settled; reopen them only with the lab owner.
 | Nothing from the internet | htmx 2.0.11, Atkinson Hyperlegible Next and Mono 5.3.0 and lucide-static 1.79.0 icons are vendored. FastAPI's `/docs` and `/redoc` are off. `make check` rejects external URLs in `app/`. |
 | Port and health | Port 8742. `/health` and `/healthz` both answer `{"status": "ok"}`. `/api/version` reports the running commit for `make wait`. |
 | Base image | Two stages, ubi9 python-312 into python-312-minimal; runs as any UID in group 0 with a read-only root and `/tmp` as emptyDir. Measured: ready in 247 ms, idle at 35.4 MiB. |
-| Pod sizing (planned) | Requests 25m CPU / 64Mi, limits 500m / 256Mi, set in the Deployment template with Task 7. |
+| Pod sizing | Requests 25m CPU / 64Mi, limits 500m / 256Mi, set in the Deployment template. |
 | Stateless | No database. Knowledge is indexed in memory at startup. |
 | Start page | `/` shows it until `app.yaml` lists a screen; `/start` always does, linked from every footer. Ten use cases from `platform/baseapp/usecases.yaml` (in the base image, since `catalog/` is not in the app image); Alert Triage's three prompts must match its brief word for word. Steps tick from what the app has: a screen, then `knowledge:` and a checklist, then a score and a table. It polls `/api/version` and reloads on a new build. No harness progress and no model call: the app cannot see the harness. |
 | Lab user label | `LAB_USER` in the Deployment's environment shows `· user-7` beside the app name; unset, nothing shows. |
@@ -146,10 +146,11 @@ Paths marked **seeded** are what `build-lab-repo.sh` copies into every lab user'
 ```text
 hackathon-v2/
 ├── .gitea/workflows/build-deploy-openshift.yml   seeded: build and deploy on push
-├── app/                                          seeded: THE user's app; starts empty (the start page)
+├── app/                                          seeded: THE user's app; starts empty (the System status page)
 │   └── app.yaml
 ├── catalog/                                      seeded: briefs a first prompt can name
-│   └── it-alert-triage.md
+│   ├── it-alert-triage.md
+│   └── netconf-guard.md
 ├── docs/                                         base-app only
 │   ├── decisions.md                              this file
 │   ├── gallery/                                  one app per industry, mock screenshots
@@ -163,8 +164,8 @@ hackathon-v2/
 │   │   ├── shrink-analyst/app/…
 │   │   ├── *.png
 │   │   └── README.md
-│   ├── screenshots/…                             phase 1 placeholder screenshots
-│   │   └── final/                                alert-triage-final.png, start-page*.png
+│   ├── screenshots/…                             phase 1 placeholder screenshots, netconf-guard-v4.png
+│   │   └── final/                                alert-triage-final.png, start-page*.png (v1)
 │   ├── superpowers/…                             roadmap and phase plans
 │   └── walkthrough/alert-triage/                 app/ after each of the three prompts
 │       ├── step-1-build/app/…
@@ -173,6 +174,7 @@ hackathon-v2/
 │       ├── app-yaml.md
 │       └── README.md
 ├── examples/                                     seeded: finished apps to copy patterns from
+│   ├── netconf-guard/app/                        network config review against a hardening standard
 │   └── alert-triage/app/                         = step 3 of the walkthrough
 │       ├── data/
 │       │   ├── assets.csv
@@ -192,18 +194,21 @@ hackathon-v2/
 │   ├── baseapp/                                  the platform source
 │   │   ├── static/
 │   │   │   ├── css/base.css
-│   │   │   ├── js/review.js, js/start.js
+│   │   │   ├── js/review.js
 │   │   │   └── vendor/…                          htmx, fonts, icons
 │   │   ├── templates/
 │   │   │   ├── layouts/review.html
 │   │   │   ├── partials/
 │   │   │   │   ├── answer.html
+│   │   │   │   ├── ask.html                      status page: ask a model
 │   │   │   │   ├── checks.html
+│   │   │   │   ├── chips.html                    per-screen status chips
 │   │   │   │   ├── input.html
+│   │   │   │   ├── load.html                     status page: 10 requests at once
 │   │   │   │   ├── run_error.html
-│   │   │   │   └── status.html                   the start page's check strip
+│   │   │   │   └── tiles.html                    status page tiles
 │   │   │   ├── base.html
-│   │   │   └── start.html
+│   │   │   └── status.html                       the System status page
 │   │   ├── __init__.py
 │   │   ├── __main__.py                           python -m baseapp: uvicorn on APP_PORT
 │   │   ├── appspec.py                            app.yaml
@@ -220,8 +225,7 @@ hackathon-v2/
 │   │   ├── runner.py                             one run: inputs → hooks → search → prompt → model
 │   │   ├── screens.py                            screen files
 │   │   ├── smoke.py                              make smoke
-│   │   ├── start.py                              start page: use cases, steps done, preview
-│   │   ├── usecases.yaml                         the ten use cases and their prompts
+│   │   ├── status.py                             System status page: tiles, ask, load test
 │   │   └── wait.py                               make wait
 │   ├── requirements-dev.txt
 │   └── requirements.txt
@@ -231,7 +235,7 @@ hackathon-v2/
 │   └── verify-image.sh                           restricted-pod run: ready < 1 s, idle < 64 MiB
 ├── skills/                                       seeded: the harness skill
 │   └── base-app/SKILL.md
-├── tests/                                        base-app only; 109 tests
+├── tests/                                        base-app only; 111 tests
 │   ├── test_appspec.py
 │   ├── test_check_smoke.py
 │   ├── test_config.py
@@ -242,7 +246,7 @@ hackathon-v2/
 │   ├── test_review_web.py
 │   ├── test_screens.py
 │   ├── test_seed.py
-│   ├── test_start.py
+│   ├── test_status.py
 │   ├── test_wait.py
 │   └── test_walkthrough.py
 ├── .dockerignore                                 base-app only
