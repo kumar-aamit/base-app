@@ -4,7 +4,7 @@
 # else here (Containerfile, tests, scripts, docs, the paper) is base-app tooling.
 set -euo pipefail
 
-SEED=(AGENTS.md Dockerfile Makefile team.env.example .gitignore .gitea app catalog examples skills platform)
+SEED=(GUIDE.md guide-images AGENTS.md Dockerfile Makefile team.env.example .gitignore .gitea app catalog examples skills platform)
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="${ROOT}/dist/team-repo"

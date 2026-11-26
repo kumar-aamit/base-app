@@ -75,6 +75,7 @@ Each team repo has one `app/` folder, and the finished app is whatever that fold
 
 ```text
 team-07/                    the team's code repo
+├── GUIDE.md                the lab user's step-by-step guide, with guide-images/
 ├── AGENTS.md               the rules the harness follows
 ├── team.env.example        team number, code repo remote, app URL, model endpoints
 ├── Dockerfile              FROM ${BASE_IMAGE}, COPY app/, APP_COMMIT build arg

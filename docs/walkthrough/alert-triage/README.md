@@ -13,6 +13,7 @@ stamps `platform/PIN`:
 
 ```text
 team-07/
+├── GUIDE.md                       the lab user's step-by-step guide (+ guide-images/)
 ├── AGENTS.md                      the 9 rules the agentic harness follows
 ├── skills/base-app/SKILL.md       how to write app/: fields, blocks, recipes, the loop
 ├── catalog/it-alert-triage.md     the brief prompt 1 names
@@ -141,6 +142,6 @@ ok    triage: example "Locked-out user, already reset" runs and renders
 
 All checks passed.
 $ git add app && git commit -m "..." && git push
-$ make wait     # until the Route serves the pushed commit
+$ make wait     # until the app URL serves the pushed commit
 $ make smoke    # every example against the real smart model, with timings
 ```

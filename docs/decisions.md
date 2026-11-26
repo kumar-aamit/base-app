@@ -33,7 +33,7 @@ These are settled; reopen them only with the lab owner.
 |---|---|
 | The repo root is laid out as a team repo | What you open is what a team gets, plus base-app tooling beside it. |
 | `platform/baseapp/` is the source | Not a generated copy. The package is `baseapp`, not `platform`, which would shadow the standard library. |
-| Seed by explicit list | `SEED` in `build-team-repo.sh`: AGENTS.md, Dockerfile, Makefile, team.env.example, .gitignore, .gitea, app, catalog, examples, skills, platform. |
+| Seed by explicit list | `SEED` in `build-team-repo.sh`: GUIDE.md, guide-images, AGENTS.md, Dockerfile, Makefile, team.env.example, .gitignore, .gitea, app, catalog, examples, skills, platform. |
 | Base-app only | Containerfile, .dockerignore, tests, scripts, docs, base-app-paper.md, pyproject.toml, requirements-test.txt. `tests/test_seed.py` fails if a new top-level path is in neither list. |
 | `platform/PIN` | A hash of `platform/baseapp`, written only into the seeded copy. `make check` in a team repo fails if `platform/` was edited; in this repo it skips the comparison. |
 | Working copy | `/Users/amitkumar/PycharmProjects/hackathon-v2`. The older copy under `Documents/demo-guide/base-app` is stale. Remote `origin` is the public GitHub repo `kumar-aamit/base-app` (`main`, tags `phase-1` and `phase-2`); `final` is local only. |
@@ -216,6 +216,8 @@ hackathon-v2/
 ├── .dockerignore                                 base-app only
 ├── .gitignore                                    seeded
 ├── AGENTS.md                                     seeded: the 9 rules the harness follows
+├── GUIDE.md                                      seeded: the lab user's step-by-step guide
+├── guide-images/                                 seeded: the step screenshots GUIDE.md shows
 ├── base-app-paper.md                             base-app only: the design paper
 ├── Containerfile                                 base-app only: the base image
 ├── Dockerfile                                    seeded: the team image
