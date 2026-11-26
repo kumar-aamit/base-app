@@ -4,6 +4,29 @@ Where the base-app platform and each lab user's repo stand as of 2026-11-26 (bra
 from tag `phase-2`). The design paper is `base-app-paper.md`; where this file and the paper differ,
 this file describes what is built.
 
+## v2 (branch `v2`)
+
+What changed from v1 on `main`, from the design review on 2026-11-26. Where this section and the
+rest of this file differ, this section wins.
+
+| Area | v2 |
+|---|---|
+| Default app | **Mock App** opens on a **System status** page instead of the start page. Ten tiles: App, Fast model, Smart model, Knowledge, Air-gapped, Private data, Token cost, Data residency, Under load, Model version. Each has an (i) with its meaning on hover or focus. |
+| Live demos | *Ask the fast model* (classify a log line), *Ask the smart model* (why a hospital runs AI on-site) and *10 requests at once* to the fast model. Each shows time, tokens and $0. Mock mode says no model was called and shows no made-up timings. |
+| Prompts | Not in the app. Each guided use case has a brief in `catalog/` with its prompts; the lab guide's appendix shows the same prompts. `start.py`, `usecases.yaml`, the start page and its script are removed. |
+| Header | No Air-gap capable badge. A **System status** link with a live dot appears once the app has a screen; screen tabs move into the header. |
+| Status chips | A row above each screen: `airgap`, `stored`, `runs`, `last`, `model`, `knowledge`, chosen and renamed with `status:` in the screen file, updated after every run. |
+| Version | Footer: `<app> v<N> · build <commit> · deployed <time> · base-app <version>`. N is `APP_VERSION`, else the trailing number of `OPENSHIFT_BUILD_NAME`, which OpenShift sets in Docker-strategy builds (to confirm on the cluster). Platform version 0.2.0. |
+| Tokens | The model client reads `usage.total_tokens` (or estimates 4 characters a token) and strips `<think>` blocks. Counters live in memory and reset with each build. |
+| Precision | `LLM_FAST_PRECISION` (default FP8) and `LLM_SMART_PRECISION` (default NVFP4) label the models on tiles and chips. Set them to how each model is served. |
+| Answers | `score` takes `higher: worse` or `higher: better` for red, amber and green bands. Table columns named Severity, Risk or Priority show colored chips; Line, Fix, Command and Config line are monospace. |
+| Lead network example | `examples/netconf-guard/app/`: NetConf Guard, screen Network Config Review, three sample configs, a 25-rule hardening standard. Brief: `catalog/netconf-guard.md`. |
+| Icons | Nine more Lucide icons vendored: zap, cpu, search, lock, coins, landmark, gauge, sliders-horizontal, info. |
+
+Still as v1: review layout only, no streaming or chat, stateless pods, port 8742, `make check`,
+`make wait`, `make smoke`. GUIDE.md still walks through Alert Triage and points to NetConf Guard
+as the alternative; `base-app-paper.md` and the walkthrough under `docs/walkthrough/` describe v1.
+
 ## Decisions
 
 ### Locked
