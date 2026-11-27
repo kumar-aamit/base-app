@@ -10,26 +10,31 @@ Markdown, CSV and text files, plus an optional `hooks.py`. Read `AGENTS.md` firs
 
 ## Clone the team repo
 
-Only when the team's repo is not on this machine yet. The repo is `team-<N>`, where N is the
-user's team number. Work in exactly that one repo.
+Only when the team's repo is not on this machine yet. The repo is `team-<N>`, where N is the team
+this machine is set up for and the user's own number matches it. Work in exactly that one repo.
 
-1. If the user has not said their team number, ask "What is your team number?". `7`, `team-7` and
-   `team 7` all mean 7. Anything that is not a whole number: ask again. Never guess it.
-2. Clone it into the folder your harness works in (for OpenClaw, `~/.openclaw/workspace/team-app`):
+1. Read the team this machine belongs to: `echo "${LAB_TEAM:-$(cat ~/.openclaw/lab-team 2>/dev/null)}"`.
+   If it prints nothing, stop: tell the user this machine has no team set (`LAB_TEAM` or
+   `~/.openclaw/lab-team`) and to ask the lab instructor. Do not clone anything.
+2. If the user has not said their team number, ask "What is your team number?". `7`, `team-7` and
+   `team 7` all mean 7, on both sides. Anything that is not a whole number: ask again. Never guess it.
+3. Compare the two numbers. If they differ, tell the user the number does not match this machine
+   and ask them to check it, without saying the machine's number. Clone nothing until they match.
+4. If the folder your harness works in already exists (for OpenClaw, `~/.openclaw/workspace/team-app`),
+   check `git -C <folder> remote get-url origin`. If it ends in `/team-<N>.git`, `git pull` and use
+   it. If it names another team, use and delete nothing: tell the user and ask what to do.
+5. Otherwise clone `team-<N>` into that folder:
    ```bash
    git -c http.extraHeader="Authorization: token ${GITEA_TOKEN}" -c http.sslVerify=false \
      clone "${GITEA_INSTANCE_URL}/admin/team-<N>.git" ~/.openclaw/workspace/team-app
    ```
    `GITEA_INSTANCE_URL` and `GITEA_TOKEN` are set on the lab machine; if either is missing, ask the
    user. Never print or save the token.
-3. If the clone fails, stop. Tell the user that `team-<N>` was not found or not allowed, and ask
-   them to check the number. Clone again only with a number they give you.
-4. Never try a nearby number, list or search the server's repos, or clone a repo the user did not
-   name. Another team's repo is never a fallback.
-5. If the folder already exists, check `git -C <folder> remote get-url origin`. If it ends in
-   `/team-<N>.git`, `git pull` and use it. If it names another team, use and delete nothing: tell
-   the user which team it belongs to and ask what to do.
-6. Copy `lab.env.example` to `lab.env` (git-ignored) and set `APP_URL` to the team's app address
+6. If the clone fails, stop and tell the user that `team-<N>` could not be cloned and the error.
+   Do not retry with another number.
+7. Never try a nearby number, list or search the server's repos, or clone a repo other than the
+   machine's team. Another team's repo is never a fallback.
+8. Copy `lab.env.example` to `lab.env` (git-ignored) and set `APP_URL` to the team's app address
    and `INSECURE_TLS=1`. Ask the user for the address if you do not have it. `make wait` and
    `make smoke` read both.
 
